@@ -80,6 +80,10 @@ model Project {
   name           String
   slug           String
   description    String?
+  sdkKeyHash     String   @unique @map("sdk_key_hash")
+  sdkKeyPrefix   String   @map("sdk_key_prefix")
+  sdkKeyLastUsedAt DateTime? @map("sdk_key_last_used_at")
+  sdkKeyRevokedAt DateTime? @map("sdk_key_revoked_at")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
@@ -99,6 +103,10 @@ model Environment {
   slug      String   // "production", "staging", "development"
   color     String   @default("#6366f1")
   sortOrder Int      @default(0) @map("sort_order")
+  sdkKeyHash   String   @unique @map("sdk_key_hash")
+  sdkKeyPrefix String   @map("sdk_key_prefix")
+  sdkKeyLastUsedAt DateTime? @map("sdk_key_last_used_at")
+  sdkKeyRevokedAt DateTime? @map("sdk_key_revoked_at")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

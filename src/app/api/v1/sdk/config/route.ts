@@ -1,20 +1,24 @@
 import { apiError } from '@/lib/api'
-import { authenticateSdkRequest, buildFlagCache } from '@/lib/sdk'
+import { resolveSdkAccess } from '@/lib/sdk-access'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function GET(request: Request) {
-  const apiKey = await authenticateSdkRequest(request)
-  if (!apiKey) return apiError('Invalid or revoked API key', 401)
+  const access = await resolveSdkAccess(request)
+  if (!access) return apiError('Invalid or revoked SDK keys', 401)
 
-  const cache = await buildFlagCache(apiKey.environmentId)
-  if (!cache) return apiError('Environment not found', 404)
-
-  return Response.json(cache, {
-    headers: {
-      'Cache-Control': 'private, no-store',
-      ETag: `"${cache.version}"`,
+  return Response.json(
+    {
+      project: access.project,
+      environment: access.environment,
+      cache: access.cache,
     },
-  })
+    {
+      headers: {
+        'Cache-Control': 'private, no-store',
+        ETag: `"${access.cache.version}"`,
+      },
+    },
+  )
 }

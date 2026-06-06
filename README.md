@@ -3,16 +3,38 @@
 Open-source feature flag control plane with Supabase Auth, project RBAC, local
 flag evaluation, and SSE configuration delivery.
 
+## Client SDK
+
+The first SDK surface lives in `packages/sdk/` and is designed for app code to import
+directly before it is published to npm.
+
+```ts
+import { createClient } from '@launchwhitly/sdk'
+
+const client = createClient({
+  baseUrl: process.env.NEXT_PUBLIC_LAUNCHWHITLY_URL!,
+  projectKey: process.env.LW_PROJECT_KEY!,
+  environmentKey: process.env.LW_ENVIRONMENT_KEY!,
+})
+
+await client.init()
+const result = client.evaluate('checkout-v2', { userId: 'user_123' })
+```
+
+The SDK uses a public project key plus a secret environment key to bootstrap
+the local flag cache and stay synced over SSE.
+
 ## API
 
 - `GET|POST /api/v1/projects` - authenticated control-plane projects
 - `GET|POST /api/v1/projects/:projectId/flags` - list/create flags
 - `PATCH|DELETE /api/v1/projects/:projectId/flags/:flagId` - update/archive flags
-- `GET /api/v1/sdk/config` - full environment cache, authenticated by SDK key
+- `GET /api/v1/sdk/config` - project/environment bootstrap payload and cache
 - `GET /api/v1/sdk/stream` - SSE cache updates with `Last-Event-ID` replay support
 
-SDK routes accept `Authorization: Bearer <key>` or `x-api-key: <key>`. The SSE
-route also accepts `?sdkKey=<key>` for EventSource clients.
+SDK routes accept `x-launchwhitly-project-key` and
+`x-launchwhitly-environment-key`, or the matching `projectKey` and
+`environmentKey` query params.
 
 ## Getting Started
 

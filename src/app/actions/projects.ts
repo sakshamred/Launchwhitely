@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/db/client'
 import { ensureProfile } from '@/lib/profile'
 import { getSessionUser, requireOrgAction, requireProjectAction } from '@/lib/auth/permissions'
+import { generateSdkKey } from '@/lib/sdk-keys'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -25,6 +26,22 @@ function toSlug(str: string) {
 export type ProjectActionState = {
   error?: string
   fieldErrors?: Record<string, string>
+  project?: {
+    id: string
+    name: string
+    slug: string
+  }
+  projectKey?: {
+    rawKey: string
+    keyPrefix: string
+  }
+  environments?: Array<{
+    id: string
+    name: string
+    slug: string
+    keyPrefix: string
+    rawKey: string
+  }>
 } | null
 
 export type FlagActionState = {
@@ -34,6 +51,13 @@ export type FlagActionState = {
 
 export type EnvActionState = {
   error?: string
+  environment?: {
+    id: string
+    name: string
+    slug: string
+    keyPrefix: string
+  }
+  rawKey?: string
 } | null
 
 export type ApiKeyActionState = {
@@ -77,45 +101,90 @@ export async function createProject(
 
   const projectSlug = toSlug(name)
   const orgSlug = `${projectSlug}-${crypto.randomBytes(4).toString('hex')}`
-
-  // Create organisation
-  const org = await prisma.organization.create({
-    data: { name, slug: orgSlug },
-  })
-
-  // Add creator as OWNER
-  await prisma.organizationMember.create({
-    data: {
-      organizationId: org.id,
-      userId: user.id,
-      role: 'OWNER',
-    },
-  })
-
-  // Create project (allow duplicate slugs across orgs via composite unique)
-  const project = await prisma.project.create({
-    data: {
-      organizationId: org.id,
-      name,
-      slug: projectSlug,
-      description,
-    },
-  })
-
-  // Create 3 default environments
-  const defaultEnvs = [
+  const projectKey = generateSdkKey('prj')
+  const defaultEnvironments = [
     { name: 'Production', slug: 'production', color: '#22c55e', sortOrder: 0 },
     { name: 'Staging', slug: 'staging', color: '#f59e0b', sortOrder: 1 },
     { name: 'Development', slug: 'development', color: '#6366f1', sortOrder: 2 },
-  ]
+  ].map((environment) => ({
+    ...environment,
+    sdkKey: generateSdkKey('env'),
+  }))
 
-  for (const env of defaultEnvs) {
-    await prisma.environment.create({
-      data: { projectId: project.id, ...env },
+  const result = await prisma.$transaction(async (tx) => {
+    const org = await tx.organization.create({
+      data: { name, slug: orgSlug },
     })
-  }
 
-  redirect(`/projects/${project.id}`)
+    await tx.organizationMember.create({
+      data: {
+        organizationId: org.id,
+        userId: user.id,
+        role: 'OWNER',
+      },
+    })
+
+    const project = await tx.project.create({
+      data: {
+        organizationId: org.id,
+        name,
+        slug: projectSlug,
+        description,
+        sdkKeyHash: projectKey.keyHash,
+        sdkKeyPrefix: projectKey.keyPrefix,
+      },
+    })
+
+    const environments: Array<{
+      id: string
+      name: string
+      slug: string
+      keyPrefix: string
+      rawKey: string
+    }> = []
+
+    for (const environment of defaultEnvironments) {
+      const created = await tx.environment.create({
+        data: {
+          projectId: project.id,
+          name: environment.name,
+          slug: environment.slug,
+          color: environment.color,
+          sortOrder: environment.sortOrder,
+          sdkKeyHash: environment.sdkKey.keyHash,
+          sdkKeyPrefix: environment.sdkKey.keyPrefix,
+        },
+      })
+
+      environments.push({
+        id: created.id,
+        name: created.name,
+        slug: created.slug,
+        keyPrefix: created.sdkKeyPrefix,
+        rawKey: environment.sdkKey.rawKey,
+      })
+    }
+
+    return {
+      project: {
+        id: project.id,
+        name: project.name,
+        slug: project.slug,
+      },
+      environments,
+    }
+  })
+
+  revalidatePath('/projects')
+
+  return {
+    project: result.project,
+    projectKey: {
+      rawKey: projectKey.rawKey,
+      keyPrefix: projectKey.keyPrefix,
+    },
+    environments: result.environments,
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -277,30 +346,52 @@ export async function createEnvironment(
   })
   if (existing) return { error: 'An environment with this slug already exists' }
 
+  const sdkKey = generateSdkKey('env')
   const count = await prisma.environment.count({ where: { projectId } })
 
-  const env = await prisma.environment.create({
-    data: { projectId, name, slug, color, sortOrder: count },
-  })
-
-  const flags = await prisma.flag.findMany({
-    where: { projectId },
-    select: { id: true },
-  })
-
-  if (flags.length > 0) {
-    await prisma.flagState.createMany({
-      data: flags.map((flag) => ({
-        flagId: flag.id,
-        environmentId: env.id,
-        enabled: false,
-        rolloutPct: 100,
-      })),
+  const env = await prisma.$transaction(async (tx) => {
+    const created = await tx.environment.create({
+      data: {
+        projectId,
+        name,
+        slug,
+        color,
+        sortOrder: count,
+        sdkKeyHash: sdkKey.keyHash,
+        sdkKeyPrefix: sdkKey.keyPrefix,
+      },
     })
-  }
+
+    const flags = await tx.flag.findMany({
+      where: { projectId },
+      select: { id: true },
+    })
+
+    if (flags.length > 0) {
+      await tx.flagState.createMany({
+        data: flags.map((flag) => ({
+          flagId: flag.id,
+          environmentId: created.id,
+          enabled: false,
+          rolloutPct: 100,
+        })),
+      })
+    }
+
+    return created
+  })
 
   revalidatePath(`/projects/${projectId}/environments`)
-  return null
+  revalidatePath(`/projects/${projectId}`)
+  return {
+    environment: {
+      id: env.id,
+      name: env.name,
+      slug: env.slug,
+      keyPrefix: env.sdkKeyPrefix,
+    },
+    rawKey: sdkKey.rawKey,
+  }
 }
 
 // ---------------------------------------------------------------------------

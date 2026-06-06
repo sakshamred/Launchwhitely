@@ -58,6 +58,9 @@ export default async function EnvironmentsPage({ params }: Props) {
                     Color
                   </th>
                   <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
+                    SDK Key
+                  </th>
+                  <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                     API Keys
                   </th>
                   <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
@@ -97,6 +100,11 @@ export default async function EnvironmentsPage({ params }: Props) {
                           {env.color}
                         </code>
                       </div>
+                    </td>
+                    <td className="px-4 py-3 text-zinc-500 text-xs">
+                      <code className="text-[11px] font-mono text-zinc-500 bg-zinc-800/60 px-1.5 py-0.5 rounded">
+                        {env.sdkKeyPrefix}
+                      </code>
                     </td>
                     <td className="px-4 py-3 text-zinc-500 text-xs">
                       {env._count.apiKeys}

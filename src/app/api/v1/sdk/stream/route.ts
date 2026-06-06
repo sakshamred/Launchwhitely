@@ -1,5 +1,5 @@
 import { apiError } from '@/lib/api'
-import { authenticateSdkRequest } from '@/lib/sdk'
+import { resolveSdkAccess } from '@/lib/sdk-access'
 import { subscribeToFlagCache } from '@/lib/streaming'
 
 export const dynamic = 'force-dynamic'
@@ -12,8 +12,8 @@ function event(name: string, id: number, data: unknown) {
 }
 
 export async function GET(request: Request) {
-  const apiKey = await authenticateSdkRequest(request)
-  if (!apiKey) return apiError('Invalid or revoked API key', 401)
+  const access = await resolveSdkAccess(request)
+  if (!access) return apiError('Invalid or revoked SDK keys', 401)
 
   let lastVersion = Number(request.headers.get('last-event-id') ?? 0)
   let heartbeat: ReturnType<typeof setInterval> | undefined
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
   const stream = new ReadableStream({
     start(controller) {
-      unsubscribe = subscribeToFlagCache(apiKey.environmentId, (cache) => {
+      unsubscribe = subscribeToFlagCache(access.environment.id, (cache) => {
         if (!closed && cache.version > lastVersion) {
           lastVersion = cache.version
           controller.enqueue(event('config', cache.version, cache))

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useActionState } from 'react'
-import { Plus } from 'lucide-react'
+import { useActionState, useEffect, useState } from 'react'
+import { CheckCheck, Copy, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Modal } from '@/components/ui/modal'
@@ -15,25 +15,83 @@ interface NewEnvironmentButtonProps {
 const initialState: EnvActionState = null
 
 const PRESET_COLORS = [
-  '#22c55e', // green
-  '#3b82f6', // blue
-  '#6366f1', // indigo
-  '#f59e0b', // amber
-  '#ec4899', // pink
-  '#8b5cf6', // violet
-  '#ef4444', // red
-  '#14b8a6', // teal
+  '#22c55e',
+  '#3b82f6',
+  '#6366f1',
+  '#f59e0b',
+  '#ec4899',
+  '#8b5cf6',
+  '#ef4444',
+  '#14b8a6',
 ]
 
 export function NewEnvironmentButton({ projectId }: NewEnvironmentButtonProps) {
   const [open, setOpen] = useState(false)
   const [selectedColor, setSelectedColor] = useState(PRESET_COLORS[2])
+  const [copied, setCopied] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
 
   const boundAction = createEnvironment.bind(null, projectId)
   const [state, formAction, isPending] = useActionState(boundAction, initialState)
 
   const handleClose = () => {
     setOpen(false)
+    setDismissed(true)
+  }
+
+  const handleCopy = async () => {
+    if (!state?.rawKey) return
+    await navigator.clipboard.writeText(state.rawKey)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 2000)
+  }
+
+  useEffect(() => {
+    if (state?.rawKey) {
+      setDismissed(false)
+    }
+  }, [state?.rawKey])
+
+  if (state?.rawKey && state.environment && !dismissed) {
+    return (
+      <Modal
+        open={true}
+        onClose={handleClose}
+        title="Environment Created"
+        footer={<Button onClick={handleClose}>Done</Button>}
+      >
+        <div className="space-y-4">
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-3">
+            <p className="text-amber-300 text-sm font-medium">
+              Copy this SDK key now. It will not be shown again.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider text-zinc-500">
+              {state.environment.name}
+            </p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-xs font-mono text-zinc-300 bg-zinc-800 rounded-lg px-3 py-2 break-all">
+                {state.rawKey}
+              </code>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopy}
+                className="flex-shrink-0"
+              >
+                {copied ? (
+                  <CheckCheck className="h-4 w-4 text-green-400" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    )
   }
 
   return (
@@ -81,7 +139,6 @@ export function NewEnvironmentButton({ projectId }: NewEnvironmentButtonProps) {
             hint="Lowercase letters, numbers, and hyphens"
           />
 
-          {/* Color picker */}
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-zinc-300">Color</label>
             <div className="flex items-center gap-2 flex-wrap">

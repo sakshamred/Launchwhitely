@@ -52,7 +52,7 @@ export default async function ApiKeysPage({ params }: Props) {
           <EmptyState
             icon={Key}
             title="No API keys"
-            description="Create an API key to authenticate SDK requests or server-side integrations."
+            description="Create an API key for server-side integrations and control-plane access."
             action={
               <CreateApiKeyButton projectId={projectId} environments={environments} />
             }

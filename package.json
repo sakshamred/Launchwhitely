@@ -9,7 +9,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "sdk:build": "npm --prefix packages/sdk run build",
+    "sdk:watch": "npm --prefix packages/sdk run watch"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

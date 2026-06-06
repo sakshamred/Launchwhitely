@@ -30,7 +30,10 @@ export default async function ProjectFlagsPage({
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
-      environments: { orderBy: { sortOrder: "asc" } },
+      environments: {
+        orderBy: { sortOrder: "asc" },
+        select: { id: true, name: true, slug: true, color: true, sdkKeyPrefix: true },
+      },
     },
   });
   if (!project) redirect("/projects");
@@ -62,6 +65,40 @@ export default async function ProjectFlagsPage({
       />
 
       <div className="p-6">
+        <div className="mb-6 grid gap-3 md:grid-cols-2">
+          <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 p-4">
+            <p className="text-[11px] uppercase tracking-wider text-zinc-500 mb-2">
+              Project SDK key prefix
+            </p>
+            <code className="text-xs font-mono text-zinc-300 bg-zinc-950/70 border border-zinc-800/60 rounded-lg px-3 py-2 inline-flex">
+              {project.sdkKeyPrefix}
+            </code>
+            <p className="text-zinc-600 text-xs mt-2">
+              Use the full project key from the project creation flow.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 p-4">
+            <p className="text-[11px] uppercase tracking-wider text-zinc-500 mb-2">
+              Current environment SDK key prefix
+            </p>
+            {currentEnv ? (
+              <>
+                <code className="text-xs font-mono text-zinc-300 bg-zinc-950/70 border border-zinc-800/60 rounded-lg px-3 py-2 inline-flex">
+                  {currentEnv.sdkKeyPrefix}
+                </code>
+                <p className="text-zinc-600 text-xs mt-2">
+                  {currentEnv.name} is the active environment for flag edits and SDK sync.
+                </p>
+              </>
+            ) : (
+              <p className="text-zinc-600 text-xs">
+                Create an environment to generate its SDK key.
+              </p>
+            )}
+          </div>
+        </div>
+
         {flags.length === 0 ? (
           <EmptyState
             icon={ToggleLeft}

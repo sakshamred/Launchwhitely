@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useActionState, useRef } from 'react'
+import { useState, useActionState, useRef, useEffect } from 'react'
 import { Plus, Copy, CheckCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,6 +25,7 @@ const initialState: ApiKeyActionState = null
 export function CreateApiKeyButton({ projectId, environments }: CreateApiKeyButtonProps) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
   const boundAction = createApiKey.bind(null, projectId)
@@ -39,10 +40,17 @@ export function CreateApiKeyButton({ projectId, environments }: CreateApiKeyButt
 
   const handleClose = () => {
     setOpen(false)
+    setDismissed(true)
   }
 
+  useEffect(() => {
+    if (state?.rawKey) {
+      setDismissed(false)
+    }
+  }, [state?.rawKey])
+
   // If we have a raw key, show the "copy key" modal
-  if (state?.rawKey) {
+  if (state?.rawKey && !dismissed) {
     return (
       <Modal
         open={true}
