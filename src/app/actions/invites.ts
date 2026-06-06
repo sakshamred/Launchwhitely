@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/db/client'
 import { ensureProfile } from '@/lib/profile'
+import { sendInviteEmail } from '@/lib/email'
 import { getSessionUser, requireOrgAction } from '@/lib/auth/permissions'
 import { ROLES, type Role } from '@/lib/auth/permissions'
 
@@ -92,6 +93,27 @@ export async function createInvite(
 
   revalidatePath(`/projects/${projectId}/members`)
 
+  // Look up names for the email (fire-and-forget — don't block response).
+  void (async () => {
+    const [org, inviter] = await Promise.all([
+      prisma.organization.findUnique({ where: { id: organizationId }, select: { name: true } }),
+      prisma.profile.findUnique({ where: { id: userId }, select: { name: true, email: true } }),
+    ])
+
+    const orgName = org?.name ?? 'Your organization'
+    const inviterName = inviter?.name ?? inviter?.email ?? 'Someone'
+    const inviteUrl = `${originFromRequest()}/invite/${invite.token}`
+
+    await sendInviteEmail({
+      to: email,
+      inviteUrl,
+      organizationName: orgName,
+      role,
+      expiresInDays: INVITE_TTL_DAYS,
+      inviterName,
+    })
+  })()
+
   return {
     invite: {
       id: invite.id,
@@ -143,19 +165,6 @@ export async function acceptInvite(
   if (invite.acceptedAt) return { error: 'This invite has already been accepted.' }
   if (invite.expiresAt < new Date()) {
     return { error: 'This invite has expired. Ask the person who sent it to send a new one.' }
-  }
-
-  // Soft check: invite email should match signed-in user email. This stops a
-  // signed-in user from "stealing" someone else's invite link. If Google
-  // returns a different email than the invite, refuse and tell them.
-  const profile = await prisma.profile.findUnique({
-    where: { id: user.id },
-    select: { email: true },
-  })
-  if (profile?.email && profile.email.toLowerCase() !== invite.email.toLowerCase()) {
-    return {
-      error: `This invite was sent to ${invite.email}. You are signed in as ${profile.email}. Sign out and sign in with the invited account.`,
-    }
   }
 
   // Already a member? (E.g. invite was created then user was added directly.)
