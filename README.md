@@ -1,8 +1,22 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Launchwhitly
+
+Open-source feature flag control plane with Supabase Auth, project RBAC, local
+flag evaluation, and SSE configuration delivery.
+
+## API
+
+- `GET|POST /api/v1/projects` - authenticated control-plane projects
+- `GET|POST /api/v1/projects/:projectId/flags` - list/create flags
+- `PATCH|DELETE /api/v1/projects/:projectId/flags/:flagId` - update/archive flags
+- `GET /api/v1/sdk/config` - full environment cache, authenticated by SDK key
+- `GET /api/v1/sdk/stream` - SSE cache updates with `Last-Event-ID` replay support
+
+SDK routes accept `Authorization: Bearer <key>` or `x-api-key: <key>`. The SSE
+route also accepts `?sdkKey=<key>` for EventSource clients.
 
 ## Getting Started
 
-First, run the development server:
+Copy `.env.example`, add your Supabase and PostgreSQL credentials, then run:
 
 ```bash
 npm run dev

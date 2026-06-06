@@ -4,6 +4,7 @@ import crypto from 'node:crypto'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/db/client'
+import { hasProjectRole, type ProjectRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 
 // ---------------------------------------------------------------------------
@@ -23,6 +24,17 @@ async function requireUser() {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  return user
+}
+
+async function requireProjectRole(
+  projectId: string,
+  minimum: ProjectRole = 'VIEWER',
+) {
+  const user = await requireUser()
+  if (!(await hasProjectRole(user.id, projectId, minimum))) {
+    throw new Error('You do not have permission to perform this action')
+  }
   return user
 }
 
@@ -131,7 +143,7 @@ export async function createFlag(
   _state: FlagActionState,
   formData: FormData,
 ): Promise<FlagActionState> {
-  await requireUser()
+  await requireProjectRole(projectId, 'DEVELOPER')
 
   const key = (formData.get('key') as string | null)?.trim()
   const name = (formData.get('name') as string | null)?.trim()
@@ -201,10 +213,15 @@ export async function updateFlagState(
   data: { enabled?: boolean; rolloutPct?: number },
   projectId: string,
 ): Promise<void> {
-  await requireUser()
+  await requireProjectRole(projectId, 'DEVELOPER')
 
   await prisma.flagState.updateMany({
-    where: { flagId, environmentId: envId },
+    where: {
+      flagId,
+      environmentId: envId,
+      flag: { projectId },
+      environment: { projectId },
+    },
     data: {
       ...data,
       version: { increment: 1 },
@@ -226,7 +243,7 @@ export async function saveFlagState(
   _state: FlagStateActionState,
   formData: FormData,
 ): Promise<FlagStateActionState> {
-  await requireUser()
+  await requireProjectRole(projectId, 'DEVELOPER')
 
   const flagId = formData.get('flagId') as string
   const envId = formData.get('envId') as string
@@ -236,7 +253,12 @@ export async function saveFlagState(
   if (!flagId || !envId) return { error: 'Missing flagId or envId' }
 
   await prisma.flagState.updateMany({
-    where: { flagId, environmentId: envId },
+    where: {
+      flagId,
+      environmentId: envId,
+      flag: { projectId },
+      environment: { projectId },
+    },
     data: { enabled, rolloutPct, version: { increment: 1 } },
   })
 
@@ -251,10 +273,10 @@ export async function saveFlagState(
 // ---------------------------------------------------------------------------
 
 export async function archiveFlag(flagId: string, archived: boolean, projectId: string): Promise<void> {
-  await requireUser()
+  await requireProjectRole(projectId, 'DEVELOPER')
 
-  await prisma.flag.update({
-    where: { id: flagId },
+  await prisma.flag.updateMany({
+    where: { id: flagId, projectId },
     data: { archived },
   })
 
@@ -273,7 +295,7 @@ export async function createEnvironment(
   _state: EnvActionState,
   formData: FormData,
 ): Promise<EnvActionState> {
-  await requireUser()
+  await requireProjectRole(projectId, 'ADMIN')
 
   const name = (formData.get('name') as string | null)?.trim()
   const slug = (formData.get('slug') as string | null)?.trim()
@@ -321,8 +343,8 @@ export async function createEnvironment(
 // ---------------------------------------------------------------------------
 
 export async function deleteEnvironment(envId: string, projectId: string): Promise<void> {
-  await requireUser()
-  await prisma.environment.delete({ where: { id: envId } })
+  await requireProjectRole(projectId, 'ADMIN')
+  await prisma.environment.deleteMany({ where: { id: envId, projectId } })
   revalidatePath(`/projects/${projectId}/environments`)
 }
 
@@ -337,7 +359,7 @@ export async function createApiKey(
   _state: ApiKeyActionState,
   formData: FormData,
 ): Promise<ApiKeyActionState> {
-  await requireUser()
+  await requireProjectRole(projectId, 'ADMIN')
 
   const name = (formData.get('name') as string | null)?.trim()
   const environmentId = formData.get('environmentId') as string | null
@@ -345,6 +367,11 @@ export async function createApiKey(
 
   if (!name) return { error: 'Name is required' }
   if (!environmentId) return { error: 'Environment is required' }
+  const environment = await prisma.environment.findFirst({
+    where: { id: environmentId, projectId },
+    select: { id: true },
+  })
+  if (!environment) return { error: 'Environment not found' }
 
   const validTypes = ['SDK', 'SERVER']
   if (!validTypes.includes(type)) return { error: 'Invalid key type' }
@@ -374,10 +401,10 @@ export async function createApiKey(
 // ---------------------------------------------------------------------------
 
 export async function revokeApiKey(keyId: string, projectId: string): Promise<void> {
-  await requireUser()
+  await requireProjectRole(projectId, 'ADMIN')
 
-  await prisma.apiKey.update({
-    where: { id: keyId },
+  await prisma.apiKey.updateMany({
+    where: { id: keyId, environment: { projectId } },
     data: { revokedAt: new Date() },
   })
 
@@ -396,7 +423,13 @@ export async function inviteMember(
   _state: MemberActionState,
   formData: FormData,
 ): Promise<MemberActionState> {
-  await requireUser()
+  await requireProjectRole(projectId, 'ADMIN')
+
+  const project = await prisma.project.findFirst({
+    where: { id: projectId, organizationId },
+    select: { id: true },
+  })
+  if (!project) return { error: 'Organization does not match project' }
 
   const email = (formData.get('email') as string | null)?.trim().toLowerCase()
   const role = (formData.get('role') as string | null) ?? 'VIEWER'
@@ -441,13 +474,13 @@ export async function updateMemberRole(
   role: string,
   projectId: string,
 ): Promise<void> {
-  await requireUser()
+  await requireProjectRole(projectId, 'ADMIN')
 
   const validRoles = ['OWNER', 'ADMIN', 'DEVELOPER', 'VIEWER']
   if (!validRoles.includes(role)) throw new Error('Invalid role')
 
-  await prisma.organizationMember.update({
-    where: { id: memberId },
+  await prisma.organizationMember.updateMany({
+    where: { id: memberId, organization: { projects: { some: { id: projectId } } } },
     data: { role: role as 'OWNER' | 'ADMIN' | 'DEVELOPER' | 'VIEWER' },
   })
 
@@ -459,7 +492,9 @@ export async function updateMemberRole(
 // ---------------------------------------------------------------------------
 
 export async function removeMember(memberId: string, projectId: string): Promise<void> {
-  await requireUser()
-  await prisma.organizationMember.delete({ where: { id: memberId } })
+  await requireProjectRole(projectId, 'ADMIN')
+  await prisma.organizationMember.deleteMany({
+    where: { id: memberId, organization: { projects: { some: { id: projectId } } } },
+  })
   revalidatePath(`/projects/${projectId}/members`)
 }

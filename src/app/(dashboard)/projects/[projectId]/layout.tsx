@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { Suspense, type ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { hasProjectRole } from '@/lib/auth'
 import { prisma } from '@/db/client'
 import { EnvSwitcher } from '@/components/env-switcher'
 
@@ -17,6 +18,7 @@ export default async function ProjectLayout({ children, params }: Props) {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  if (!(await hasProjectRole(user.id, projectId))) redirect('/projects')
 
   const project = await prisma.project.findUnique({
     where: { id: projectId },
