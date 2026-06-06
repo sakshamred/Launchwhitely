@@ -78,9 +78,9 @@ export default async function MembersPage({ params }: Props) {
         }
       />
 
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-8">
         <div>
-          <h2 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">
+          <h2 className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-3">
             Active members ({members.length})
           </h2>
           {members.length === 0 ? (
@@ -90,37 +90,36 @@ export default async function MembersPage({ params }: Props) {
               description="Invite team members to collaborate on this project."
             />
           ) : (
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+            <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-800">
-                    <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                  <tr className="border-b border-zinc-800/60">
+                    <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                       Member
                     </th>
-                    <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                    <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                       Role
                     </th>
-                    <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                    <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                       Joined
                     </th>
                     {canManage && (
-                      <th className="text-right px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
-                        Actions
+                      <th className="text-right px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                       </th>
                     )}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800">
+                <tbody className="divide-y divide-zinc-800/40">
                   {members.map((member) => {
                     const isCurrentUser = member.userId === user.id
                     const role = member.role as MemberRole
 
                     return (
-                      <tr key={member.id} className="hover:bg-zinc-800/40 transition-colors">
+                      <tr key={member.id} className="hover:bg-zinc-800/30 transition-colors">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-indigo-600/20 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-indigo-400 text-xs font-medium">
+                            <div className="w-7 h-7 bg-zinc-800/60 rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-zinc-400 text-[11px] font-medium">
                                 {(member.user.name ?? member.user.email)[0]?.toUpperCase() ?? '?'}
                               </span>
                             </div>
@@ -129,16 +128,16 @@ export default async function MembersPage({ params }: Props) {
                                 <p className="text-zinc-100 font-medium text-sm">
                                   {member.user.name}
                                   {isCurrentUser && (
-                                    <span className="ml-1.5 text-xs text-zinc-500">(you)</span>
+                                    <span className="ml-1.5 text-[11px] text-zinc-600">(you)</span>
                                   )}
                                 </p>
                               )}
                               <p
-                                className={`text-xs ${member.user.name ? 'text-zinc-500' : 'text-zinc-100 font-medium'}`}
+                                className={`text-xs ${member.user.name ? 'text-zinc-600' : 'text-zinc-200 font-medium'}`}
                               >
                                 {member.user.email}
                                 {!member.user.name && isCurrentUser && (
-                                  <span className="ml-1.5 text-zinc-500">(you)</span>
+                                  <span className="ml-1.5 text-zinc-600">(you)</span>
                                 )}
                               </p>
                             </div>
@@ -147,7 +146,7 @@ export default async function MembersPage({ params }: Props) {
                         <td className="px-4 py-3">
                           <Badge variant={roleBadgeVariant[role]}>{role}</Badge>
                         </td>
-                        <td className="px-4 py-3 text-zinc-500 text-xs">
+                        <td className="px-4 py-3 text-zinc-600 text-xs">
                           {new Date(member.createdAt).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -177,31 +176,30 @@ export default async function MembersPage({ params }: Props) {
 
         {canManage && pendingInvites.length > 0 && (
           <div>
-            <h2 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">
+            <h2 className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-3">
               Pending invites ({pendingInvites.length})
             </h2>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+            <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-800">
-                    <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                  <tr className="border-b border-zinc-800/60">
+                    <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                       Email
                     </th>
-                    <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                    <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                       Role
                     </th>
-                    <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                    <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                       Invited by
                     </th>
-                    <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                    <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                       Expires
                     </th>
-                    <th className="text-right px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
-                      Actions
+                    <th className="text-right px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800">
+                <tbody className="divide-y divide-zinc-800/40">
                   {pendingInvites.map((invite) => {
                     const role = invite.role as MemberRole
                     const inviterName = invite.invitedBy.name ?? invite.invitedBy.email
@@ -210,13 +208,13 @@ export default async function MembersPage({ params }: Props) {
                       Math.ceil((invite.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
                     )
                     return (
-                      <tr key={invite.id} className="hover:bg-zinc-800/40 transition-colors">
-                        <td className="px-4 py-3 text-zinc-100">{invite.email}</td>
+                      <tr key={invite.id} className="hover:bg-zinc-800/30 transition-colors">
+                        <td className="px-4 py-3 text-zinc-200">{invite.email}</td>
                         <td className="px-4 py-3">
                           <Badge variant={roleBadgeVariant[role]}>{role}</Badge>
                         </td>
-                        <td className="px-4 py-3 text-zinc-500 text-xs">{inviterName}</td>
-                        <td className="px-4 py-3 text-zinc-500 text-xs">
+                        <td className="px-4 py-3 text-zinc-600 text-xs">{inviterName}</td>
+                        <td className="px-4 py-3 text-zinc-600 text-xs">
                           {daysLeft === 0 ? 'Today' : `in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`}
                         </td>
                         <td className="px-4 py-3 text-right">

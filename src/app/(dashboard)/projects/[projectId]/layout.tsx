@@ -15,8 +15,6 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export default async function ProjectLayout({ children, params }: Props) {
   const { projectId } = await params
 
-  // Guard: non-UUID segments like "new" should never reach this layout.
-  // The sidebar already filters them out, but a direct URL should not 500.
   if (!UUID_RE.test(projectId)) redirect('/projects')
 
   const supabase = await createClient()
@@ -43,13 +41,12 @@ export default async function ProjectLayout({ children, params }: Props) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Project top bar */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-950 flex-shrink-0">
-        <span className="text-zinc-100 font-medium text-sm">{project.name}</span>
+      <div className="flex items-center justify-between px-6 h-11 border-b border-zinc-800/60 bg-black/40 flex-shrink-0">
+        <span className="text-zinc-300 text-sm font-medium">{project.name}</span>
         {environments.length > 0 && (
           <Suspense
             fallback={
-              <div className="h-8 w-36 bg-zinc-800 rounded-lg animate-pulse" />
+              <div className="h-7 w-32 bg-zinc-800/40 rounded-md animate-pulse" />
             }
           >
             <EnvSwitcher
@@ -60,8 +57,6 @@ export default async function ProjectLayout({ children, params }: Props) {
           </Suspense>
         )}
       </div>
-
-      {/* Page content */}
       <main className="flex-1 overflow-y-auto">{children}</main>
     </div>
   )

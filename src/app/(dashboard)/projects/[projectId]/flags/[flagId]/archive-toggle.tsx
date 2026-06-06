@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { Archive, ArchiveRestore } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { archiveFlag } from '@/app/actions/projects'
@@ -30,12 +30,12 @@ export function ArchiveToggle({ flagId, projectId, archived }: ArchiveToggleProp
     >
       {archived ? (
         <>
-          <ArchiveRestore className="h-4 w-4" />
+          <ArchiveRestore className="h-3.5 w-3.5" />
           Unarchive
         </>
       ) : (
         <>
-          <Archive className="h-4 w-4" />
+          <Archive className="h-3.5 w-3.5" />
           Archive
         </>
       )}

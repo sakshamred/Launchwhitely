@@ -28,23 +28,21 @@ export default function NewFlagPage() {
 
   return (
     <div className="flex flex-col">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-zinc-800 flex-shrink-0">
+      <div className="flex items-center gap-3 px-6 h-14 border-b border-zinc-800/60 flex-shrink-0">
         <Link
           href={`/projects/${projectId}`}
-          className="text-zinc-400 hover:text-zinc-100 transition-colors"
+          className="text-zinc-500 hover:text-zinc-300 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <h1 className="text-zinc-100 font-semibold text-lg">New Feature Flag</h1>
+        <h1 className="text-zinc-100 font-medium text-[15px]">New Feature Flag</h1>
       </div>
 
       <div className="p-6">
         <div className="max-w-lg mx-auto">
-          {/* Intro */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center justify-center w-10 h-10 bg-indigo-600/20 rounded-xl">
-              <ToggleLeft className="h-5 w-5 text-indigo-400" />
+          <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center justify-center w-10 h-10 bg-zinc-800/60 rounded-xl">
+              <ToggleLeft className="h-5 w-5 text-zinc-400" />
             </div>
             <div>
               <p className="text-zinc-100 font-medium text-sm">Define a feature flag</p>
@@ -54,10 +52,9 @@ export default function NewFlagPage() {
             </div>
           </div>
 
-          {/* Form */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-6">
             {state?.error && (
-              <div className="mb-4 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <div className="mb-5 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg">
                 <p className="text-red-400 text-sm">{state.error}</p>
               </div>
             )}

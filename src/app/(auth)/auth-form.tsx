@@ -11,22 +11,28 @@ type Props = {
 export function AuthForm({ mode, next }: Props) {
   return (
     <div className="w-full max-w-sm">
-      <div className="flex items-center gap-2.5 mb-6">
-        <div className="flex items-center justify-center w-9 h-9 bg-indigo-600 rounded-lg">
-          <Flag className="h-4 w-4 text-white" />
+      <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center justify-center w-8 h-8 bg-zinc-100 rounded-lg">
+          <Flag className="h-4 w-4 text-zinc-900" />
         </div>
         <div>
-          <h1 className="text-zinc-100 font-semibold">Launchwhitly</h1>
-          <p className="text-zinc-500 text-xs">
-            {mode === 'login' ? 'Sign in to the control plane' : 'Create your account'}
-          </p>
+          <h1 className="text-zinc-100 font-semibold text-lg">Launchwhitly</h1>
         </div>
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-8">
+        <div className="mb-6">
+          <h2 className="text-zinc-100 font-medium text-lg mb-1">
+            {mode === 'login' ? 'Sign in' : 'Create account'}
+          </h2>
+          <p className="text-zinc-500 text-sm">
+            {mode === 'login' ? 'Welcome back' : 'Get started with feature flags'}
+          </p>
+        </div>
+
         <form action={signInWithGoogle.bind(null, next)}>
-          <Button type="submit" className="w-full" variant="default">
-            <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" aria-hidden="true">
+          <Button type="submit" className="w-full h-10" variant="outline">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -48,13 +54,20 @@ export function AuthForm({ mode, next }: Props) {
           </Button>
         </form>
 
-        <p className="mt-5 text-center text-xs text-zinc-500">
-          {mode === 'login' ? 'New to Launchwhitly?' : 'Already have an account?'}{' '}
+        <div className="mt-6 flex items-center gap-3">
+          <div className="flex-1 h-px bg-zinc-800" />
+          <span className="text-zinc-600 text-xs">
+            {mode === 'login' ? 'New here?' : 'Have an account?'}
+          </span>
+          <div className="flex-1 h-px bg-zinc-800" />
+        </div>
+
+        <p className="mt-6 text-center text-xs text-zinc-500">
           <Link
             href={mode === 'login' ? '/signup' : '/login'}
-            className="text-indigo-400 hover:text-indigo-300"
+            className="text-zinc-300 hover:text-zinc-100 transition-colors"
           >
-            {mode === 'login' ? 'Create an account' : 'Sign in'}
+            {mode === 'login' ? 'Create an account' : 'Sign in to your account'}
           </Link>
         </p>
       </div>

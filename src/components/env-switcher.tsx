@@ -12,7 +12,6 @@ export interface EnvSwitcherEnvironment {
 
 export interface EnvSwitcherProps {
   environments: EnvSwitcherEnvironment[]
-  /** Default env id from server (first env). Client overrides with URL param. */
   current: string
   projectId: string
 }
@@ -35,15 +34,14 @@ export function EnvSwitcher({ environments, current, projectId: _projectId }: En
 
   return (
     <div className="relative inline-flex items-center">
-      {/* Color swatch */}
       <span
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full pointer-events-none flex-shrink-0"
+        className="absolute left-2.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full pointer-events-none flex-shrink-0"
         style={{ backgroundColor: currentEnv.color }}
       />
       <select
         value={currentEnv.id}
         onChange={handleChange}
-        className="appearance-none bg-zinc-800 border border-zinc-700 text-zinc-100 rounded-lg pl-7 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer hover:border-zinc-600 transition-colors"
+        className="appearance-none bg-zinc-800/60 border border-zinc-800 text-zinc-300 rounded-md pl-5 pr-7 h-7 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-zinc-600 cursor-pointer hover:border-zinc-700 transition-colors"
       >
         {environments.map((env) => (
           <option key={env.id} value={env.id}>
@@ -51,7 +49,7 @@ export function EnvSwitcher({ environments, current, projectId: _projectId }: En
           </option>
         ))}
       </select>
-      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400 pointer-events-none" />
+      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-500 pointer-events-none" />
     </div>
   )
 }

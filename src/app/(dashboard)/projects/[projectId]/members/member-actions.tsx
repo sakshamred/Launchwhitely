@@ -44,7 +44,7 @@ export function MemberActions({
         defaultValue={currentRole}
         onChange={handleRoleChange}
         disabled={isPending}
-        className="bg-zinc-800 border border-zinc-700 text-zinc-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors"
+        className="bg-zinc-950 border border-zinc-800 text-zinc-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500/50 disabled:opacity-40 transition-colors"
       >
         <option value="VIEWER">Viewer</option>
         <option value="DEVELOPER">Developer</option>
@@ -58,7 +58,7 @@ export function MemberActions({
         onClick={() => setRemoveOpen(true)}
         disabled={isPending}
       >
-        <Trash2 className="h-3.5 w-3.5 text-red-400" />
+        <Trash2 className="h-3 w-3 text-red-400" />
       </Button>
 
       <Modal
@@ -76,9 +76,9 @@ export function MemberActions({
           </>
         }
       >
-        <p className="text-zinc-300 text-sm">
+        <p className="text-zinc-400 text-sm">
           Are you sure you want to remove{' '}
-          <span className="font-semibold text-zinc-100">{memberName}</span> from this
+          <span className="font-semibold text-zinc-200">{memberName}</span> from this
           organization? They will lose access to all projects.
         </p>
       </Modal>

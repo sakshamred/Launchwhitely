@@ -100,33 +100,33 @@ export default async function AuditLogsPage({ params, searchParams }: Props) {
           />
         ) : (
           <div className="space-y-4">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+            <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-800">
-                    <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                  <tr className="border-b border-zinc-800/60">
+                    <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                       Actor
                     </th>
-                    <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                    <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                       Action
                     </th>
-                    <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                    <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                       Resource
                     </th>
-                    <th className="text-right px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                    <th className="text-right px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                       When
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800">
+                <tbody className="divide-y divide-zinc-800/40">
                   {logs.map((log) => (
-                    <tr key={log.id} className="hover:bg-zinc-800/40 transition-colors">
+                    <tr key={log.id} className="hover:bg-zinc-800/30 transition-colors">
                       <td className="px-4 py-3">
                         <div>
                           {log.actor.name && (
-                            <p className="text-zinc-100 text-sm font-medium">{log.actor.name}</p>
+                            <p className="text-zinc-200 text-sm font-medium">{log.actor.name}</p>
                           )}
-                          <p className={`text-xs ${log.actor.name ? 'text-zinc-500' : 'text-zinc-100'}`}>
+                          <p className={`text-xs ${log.actor.name ? 'text-zinc-600' : 'text-zinc-300'}`}>
                             {log.actor.email}
                           </p>
                         </div>
@@ -135,13 +135,13 @@ export default async function AuditLogsPage({ params, searchParams }: Props) {
                         {formatAction(log.action)}
                       </td>
                       <td className="px-4 py-3">
-                        <code className="text-xs font-mono text-zinc-400 bg-zinc-800 px-1.5 py-0.5 rounded">
+                        <code className="text-[11px] font-mono text-zinc-500 bg-zinc-800/60 px-1.5 py-0.5 rounded">
                           {log.resource}
                         </code>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span
-                          className="text-zinc-500 text-xs"
+                          className="text-zinc-600 text-xs"
                           title={new Date(log.createdAt).toISOString()}
                         >
                           {formatRelativeTime(new Date(log.createdAt))}
@@ -153,10 +153,9 @@ export default async function AuditLogsPage({ params, searchParams }: Props) {
               </table>
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between">
-                <p className="text-zinc-500 text-xs">
+                <p className="text-zinc-600 text-xs">
                   Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, total)} of {total} events
                 </p>
                 <div className="flex items-center gap-2">
@@ -170,11 +169,11 @@ export default async function AuditLogsPage({ params, searchParams }: Props) {
                       size="sm"
                       disabled={!hasPrev}
                     >
-                      <ChevronLeft className="h-4 w-4" />
+                      <ChevronLeft className="h-3.5 w-3.5" />
                       Previous
                     </Button>
                   </Link>
-                  <span className="text-zinc-500 text-xs">
+                  <span className="text-zinc-600 text-xs">
                     Page {page} of {totalPages}
                   </span>
                   <Link
@@ -188,7 +187,7 @@ export default async function AuditLogsPage({ params, searchParams }: Props) {
                       disabled={!hasNext}
                     >
                       Next
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-3.5 w-3.5" />
                     </Button>
                   </Link>
                 </div>

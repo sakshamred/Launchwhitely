@@ -28,10 +28,8 @@ const projectNavItems = [
   { segment: '/settings', label: 'Settings', icon: Settings },
 ]
 
-// UUID v4 regex — 8-4-4-4-12 hex digits
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-/** Extract projectId from a pathname. Returns null for non-UUID segments (like "new"). */
 function extractProjectId(pathname: string): string | null {
   const match = pathname.match(/^\/projects\/([^/]+)/)
   const segment = match?.[1]
@@ -43,30 +41,27 @@ export function Sidebar({ userEmail }: SidebarProps) {
   const projectId = extractProjectId(pathname)
 
   return (
-    <aside className="w-64 h-full bg-zinc-900 border-r border-zinc-800 flex flex-col flex-shrink-0">
-      {/* Logo */}
-      <div className="flex items-center gap-2.5 px-4 py-5 border-b border-zinc-800">
-        <div className="flex items-center justify-center w-8 h-8 bg-indigo-600 rounded-lg flex-shrink-0">
-          <Flag className="h-4 w-4 text-white" />
+    <aside className="w-60 h-full bg-black border-r border-zinc-800/60 flex flex-col flex-shrink-0">
+      <div className="flex items-center gap-2.5 px-4 h-14 border-b border-zinc-800/60 flex-shrink-0">
+        <div className="flex items-center justify-center w-7 h-7 bg-zinc-100 rounded-md flex-shrink-0">
+          <Flag className="h-3.5 w-3.5 text-zinc-900" />
         </div>
         <span className="font-semibold text-zinc-100 text-sm tracking-tight">Launchwhitly</span>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1">
+      <nav className="flex-1 px-2 py-3 overflow-y-auto space-y-0.5">
         {projectId ? (
           <>
-            {/* Back to all projects */}
             <Link
               href="/projects"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-colors mb-3"
+              className="flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[11px] text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40 transition-colors mb-2"
             >
-              <FolderKanban className="h-3.5 w-3.5" />
+              <FolderKanban className="h-3 w-3" />
               All Projects
             </Link>
+            <div className="h-px bg-zinc-800/60 mx-3 my-1.5" />
             {projectNavItems.map(({ segment, label, icon: Icon }) => {
               const href = `/projects/${projectId}${segment}`
-              // Active: exact match for root segment, prefix match for others
               const isActive =
                 segment === ''
                   ? pathname === href || pathname === href + '/'
@@ -77,13 +72,13 @@ export function Sidebar({ userEmail }: SidebarProps) {
                   key={segment}
                   href={href}
                   className={[
-                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                    'flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm transition-colors',
                     isActive
-                      ? 'bg-zinc-800 text-zinc-100'
-                      : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50',
+                      ? 'bg-zinc-800/60 text-zinc-100'
+                      : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/40',
                   ].join(' ')}
                 >
-                  <Icon className="h-4 w-4 flex-shrink-0" />
+                  <Icon className="h-[14px] w-[14px] flex-shrink-0" />
                   {label}
                 </Link>
               )
@@ -93,29 +88,28 @@ export function Sidebar({ userEmail }: SidebarProps) {
           <Link
             href="/projects"
             className={[
-              'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+              'flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm transition-colors',
               pathname.startsWith('/projects')
-                ? 'bg-zinc-800 text-zinc-100'
-                : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50',
+                ? 'bg-zinc-800/60 text-zinc-100'
+                : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/40',
             ].join(' ')}
           >
-            <FolderKanban className="h-4 w-4 flex-shrink-0" />
+            <FolderKanban className="h-[14px] w-[14px] flex-shrink-0" />
             Projects
           </Link>
         )}
       </nav>
 
-      {/* User / Sign-out */}
-      <div className="border-t border-zinc-800 px-3 py-3 space-y-0.5">
+      <div className="border-t border-zinc-800/60 px-2 py-2 space-y-0.5">
         {userEmail && (
-          <p className="text-zinc-500 text-xs truncate px-3 py-1">{userEmail}</p>
+          <p className="text-zinc-600 text-[11px] truncate px-3 py-1">{userEmail}</p>
         )}
         <form action={signOut}>
           <button
             type="submit"
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/40 transition-colors"
           >
-            <LogOut className="h-4 w-4 flex-shrink-0" />
+            <LogOut className="h-[14px] w-[14px] flex-shrink-0" />
             Sign out
           </button>
         </form>

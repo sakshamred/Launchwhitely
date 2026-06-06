@@ -23,11 +23,11 @@ export function Slider({
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         {label ? (
-          <label className="text-sm font-medium text-zinc-300">{label}</label>
+          <label className="text-xs font-medium text-zinc-400">{label}</label>
         ) : (
           <span />
         )}
-        <span className="text-sm font-mono text-zinc-100 tabular-nums">{value}%</span>
+        <span className="text-xs font-mono text-zinc-300 tabular-nums">{value}%</span>
       </div>
       <div className="relative flex items-center">
         <input
@@ -38,7 +38,7 @@ export function Slider({
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full h-2 bg-zinc-700 rounded-full appearance-none cursor-pointer accent-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-1.5 bg-zinc-700 rounded-full appearance-none cursor-pointer accent-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed"
         />
       </div>
     </div>

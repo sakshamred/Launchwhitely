@@ -16,7 +16,7 @@ export function FlagToggle({ flagId, envId, projectId, initialEnabled }: FlagTog
   const [isPending, startTransition] = useTransition()
 
   const handleChange = (newValue: boolean) => {
-    setEnabled(newValue) // optimistic update
+    setEnabled(newValue)
     startTransition(async () => {
       await updateFlagState(flagId, envId, { enabled: newValue }, projectId)
     })

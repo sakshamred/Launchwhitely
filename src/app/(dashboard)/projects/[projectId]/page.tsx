@@ -27,7 +27,6 @@ export default async function ProjectFlagsPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Fetch project + environments
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
@@ -40,7 +39,6 @@ export default async function ProjectFlagsPage({
   const currentEnv =
     environments.find((e) => e.id === envId) ?? environments[0];
 
-  // Fetch flags with their state for the selected env
   const flags = await prisma.flag.findMany({
     where: { projectId },
     include: {
@@ -56,7 +54,7 @@ export default async function ProjectFlagsPage({
         actions={
           <Link href={`/projects/${projectId}/flags/new`}>
             <Button size="sm">
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               New Flag
             </Button>
           </Link>
@@ -79,34 +77,33 @@ export default async function ProjectFlagsPage({
             }
           />
         ) : (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
-                  <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                <tr className="border-b border-zinc-800/60">
+                  <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                  <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                     Key
                   </th>
-                  <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                  <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                     Type
                   </th>
-                  <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                  <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                     Enabled
                   </th>
-                  <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                  <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                     Rollout
                   </th>
-                  <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                  <th className="text-left px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                     Updated
                   </th>
-                  <th className="text-right px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
-                    Actions
+                  <th className="text-right px-4 py-2.5 text-zinc-500 font-medium text-[11px] uppercase tracking-wider">
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y divide-zinc-800/40">
                 {flags.map((flag) => {
                   const state = flag.states[0];
                   const rules = state?.rules;
@@ -117,7 +114,7 @@ export default async function ProjectFlagsPage({
                   return (
                     <tr
                       key={flag.id}
-                      className={`hover:bg-zinc-800/40 transition-colors ${flag.archived ? "opacity-50" : ""}`}
+                      className={`hover:bg-zinc-800/30 transition-colors ${flag.archived ? "opacity-40" : ""}`}
                     >
                       <td className="px-4 py-3">
                         <div>
@@ -130,14 +127,14 @@ export default async function ProjectFlagsPage({
                             </Badge>
                           )}
                           {flag.description && (
-                            <p className="text-zinc-500 text-xs mt-0.5 truncate max-w-xs">
+                            <p className="text-zinc-600 text-xs mt-0.5 truncate max-w-xs">
                               {flag.description}
                             </p>
                           )}
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <code className="text-xs font-mono text-zinc-400 bg-zinc-800 px-1.5 py-0.5 rounded">
+                        <code className="text-[11px] font-mono text-zinc-500 bg-zinc-800/60 px-1.5 py-0.5 rounded">
                           {flag.key}
                         </code>
                       </td>
@@ -153,21 +150,21 @@ export default async function ProjectFlagsPage({
                             initialEnabled={state.enabled}
                           />
                         ) : (
-                          <span className="text-zinc-600 text-xs">—</span>
+                          <span className="text-zinc-700 text-xs">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-zinc-400 text-xs">
+                      <td className="px-4 py-3 text-xs">
                         {state ? (
                           hasRules ? (
                             <Badge variant="indigo">targeting</Badge>
                           ) : (
-                            <span>{state.rolloutPct}%</span>
+                            <span className="text-zinc-500 font-mono">{state.rolloutPct}%</span>
                           )
                         ) : (
-                          <span className="text-zinc-600">—</span>
+                          <span className="text-zinc-700">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-zinc-500 text-xs">
+                      <td className="px-4 py-3 text-zinc-600 text-xs">
                         {state
                           ? new Date(state.updatedAt).toLocaleDateString(
                               "en-US",
@@ -183,8 +180,7 @@ export default async function ProjectFlagsPage({
                           href={`/projects/${projectId}/flags/${flag.id}${currentEnv ? `?env=${currentEnv.id}` : ""}`}
                         >
                           <Button variant="ghost" size="sm">
-                            <Pencil className="h-3.5 w-3.5" />
-                            Edit
+                            <Pencil className="h-3 w-3" />
                           </Button>
                         </Link>
                       </td>

@@ -42,7 +42,6 @@ export default async function FlagDetailPage({ params, searchParams }: Props) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Fetch flag with all environment states
   const flag = await prisma.flag.findUnique({
     where: { id: flagId },
     include: {
@@ -55,7 +54,6 @@ export default async function FlagDetailPage({ params, searchParams }: Props) {
 
   if (!flag || flag.projectId !== projectId) redirect(`/projects/${projectId}`);
 
-  // Fetch environments for the project
   const environments = await prisma.environment.findMany({
     where: { projectId },
     orderBy: { sortOrder: "asc" },
@@ -67,7 +65,6 @@ export default async function FlagDetailPage({ params, searchParams }: Props) {
     (s) => s.environmentId === currentEnv?.id,
   );
 
-  // Audit logs for this flag (last 10)
   const auditLogs = await prisma.auditLog.findMany({
     where: { projectId, resource: { contains: flag.key } },
     orderBy: { createdAt: "desc" },
@@ -86,19 +83,18 @@ export default async function FlagDetailPage({ params, searchParams }: Props) {
 
   return (
     <div className="flex flex-col">
-      {/* Page header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-zinc-800 flex-shrink-0">
+      <div className="flex items-center gap-3 px-6 h-14 border-b border-zinc-800/60 flex-shrink-0">
         <Link
           href={`/projects/${projectId}${currentEnv ? `?env=${currentEnv.id}` : ""}`}
-          className="text-zinc-400 hover:text-zinc-100 transition-colors"
+          className="text-zinc-500 hover:text-zinc-300 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <h1 className="text-zinc-100 font-semibold text-lg truncate">
+          <h1 className="text-zinc-100 font-medium text-[15px] truncate">
             {flag.name}
           </h1>
-          <code className="text-xs font-mono text-zinc-400 bg-zinc-800 px-2 py-1 rounded flex-shrink-0">
+          <code className="text-[11px] font-mono text-zinc-500 bg-zinc-800/60 px-2 py-1 rounded flex-shrink-0">
             {flag.key}
           </code>
           <Badge variant={typeBadgeVariant}>{flag.type}</Badge>
@@ -111,20 +107,19 @@ export default async function FlagDetailPage({ params, searchParams }: Props) {
         />
       </div>
 
-      <div className="p-6 space-y-6">
-        {/* Flag state for current environment */}
+      <div className="p-6 space-y-5">
         {currentEnv && currentState ? (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-            <div className="flex items-center gap-3 px-6 py-4 border-b border-zinc-800">
+          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl overflow-hidden">
+            <div className="flex items-center gap-3 px-5 py-3 border-b border-zinc-800/60">
               <span
-                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                className="w-2 h-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: currentEnv.color }}
               />
-              <h2 className="text-zinc-100 font-semibold text-sm">
-                {currentEnv.name} Configuration
+              <h2 className="text-zinc-300 font-medium text-sm">
+                {currentEnv.name}
               </h2>
             </div>
-            <div className="p-6">
+            <div className="p-5">
               <FlagStateEditor
                 flagId={flagId}
                 envId={currentEnv.id}
@@ -138,8 +133,8 @@ export default async function FlagDetailPage({ params, searchParams }: Props) {
             </div>
           </div>
         ) : (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center">
-            <p className="text-zinc-500 text-sm">
+          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-6 text-center">
+            <p className="text-zinc-600 text-sm">
               {environments.length === 0
                 ? "No environments configured for this project."
                 : "Select an environment using the switcher above."}
@@ -147,92 +142,88 @@ export default async function FlagDetailPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        {/* All environments overview */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-zinc-800">
-            <h2 className="text-zinc-100 font-semibold text-sm">
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-zinc-800/60">
+            <h2 className="text-zinc-300 font-medium text-sm">
               All Environments
             </h2>
           </div>
-          <div className="divide-y divide-zinc-800">
+          <div className="divide-y divide-zinc-800/40">
             {flag.states.map((s) => (
-              <div key={s.id} className="flex items-center gap-4 px-6 py-3">
+              <div key={s.id} className="flex items-center gap-4 px-5 py-2.5">
                 <span
                   className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ backgroundColor: s.environment.color }}
                 />
-                <span className="text-zinc-300 text-sm w-32 flex-shrink-0">
+                <span className="text-zinc-400 text-sm w-32 flex-shrink-0">
                   {s.environment.name}
                 </span>
                 <span
-                  className={`text-xs font-medium ${s.enabled ? "text-green-400" : "text-zinc-500"}`}
+                  className={`text-[11px] font-medium ${s.enabled ? "text-emerald-400" : "text-zinc-600"}`}
                 >
                   {s.enabled ? "Enabled" : "Disabled"}
                 </span>
-                <span className="text-zinc-600 text-xs">
-                  {s.rolloutPct}% rollout
+                <span className="text-zinc-700 text-xs font-mono">
+                  {s.rolloutPct}%
                 </span>
-                <span className="text-zinc-700 text-xs ml-auto">
+                <span className="text-zinc-800 text-[11px] ml-auto">
                   v{s.version}
                 </span>
               </div>
             ))}
             {flag.states.length === 0 && (
-              <p className="px-6 py-4 text-zinc-500 text-sm">
+              <p className="px-5 py-4 text-zinc-600 text-sm">
                 No environment states found.
               </p>
             )}
           </div>
         </div>
 
-        {/* Variants (non-boolean flags) */}
         {flag.type !== "BOOLEAN" && currentState && (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-zinc-800">
-              <h2 className="text-zinc-100 font-semibold text-sm">Variants</h2>
+          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl overflow-hidden">
+            <div className="px-5 py-3 border-b border-zinc-800/60">
+              <h2 className="text-zinc-300 font-medium text-sm">Variants</h2>
             </div>
-            <div className="p-6">
+            <div className="p-5">
               {Array.isArray(currentState.variants) &&
               currentState.variants.length > 0 ? (
-                <pre className="text-xs font-mono text-zinc-300 bg-zinc-800 rounded-lg p-4 overflow-x-auto">
+                <pre className="text-[11px] font-mono text-zinc-400 bg-zinc-950 rounded-lg p-4 overflow-x-auto border border-zinc-800/60">
                   {JSON.stringify(currentState.variants, null, 2)}
                 </pre>
               ) : (
-                <p className="text-zinc-500 text-sm">
-                  No variants configured. Variants allow A/B testing for
-                  multi-value flags.
+                <p className="text-zinc-600 text-sm">
+                  No variants configured.
                 </p>
               )}
             </div>
           </div>
         )}
 
-        {/* Audit trail */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-zinc-800">
-            <h2 className="text-zinc-100 font-semibold text-sm">
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-zinc-800/60">
+            <h2 className="text-zinc-300 font-medium text-sm">
               Recent Activity
             </h2>
           </div>
           {auditLogs.length === 0 ? (
-            <div className="px-6 py-8 text-center">
-              <p className="text-zinc-500 text-sm">No activity recorded yet.</p>
+            <div className="px-5 py-6 text-center">
+              <p className="text-zinc-600 text-sm">No activity recorded yet.</p>
             </div>
           ) : (
-            <div className="divide-y divide-zinc-800">
+            <div className="divide-y divide-zinc-800/40">
               {auditLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="flex items-center gap-3 px-6 py-3 text-sm"
+                  className="flex items-center gap-3 px-5 py-2.5 text-sm"
                 >
-                  <span className="text-zinc-100">
+                  <span className="text-zinc-300">
                     {formatAction(log.action)}
                   </span>
-                  <span className="text-zinc-600">·</span>
-                  <span className="text-zinc-500 text-xs">
+                  <span className="text-zinc-800">·</span>
+                  <span className="text-zinc-600 text-xs">
                     {log.actor.email}
                   </span>
-                  <span className="ml-auto text-zinc-600 text-xs">
+                  <span className="ml-auto text-zinc-700 text-[11px]">
                     {new Date(log.createdAt).toLocaleString("en-US", {
                       month: "short",
                       day: "numeric",
