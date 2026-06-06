@@ -28,10 +28,14 @@ const projectNavItems = [
   { segment: '/settings', label: 'Settings', icon: Settings },
 ]
 
-/** Extract projectId from a pathname like /projects/[id]/... */
+// UUID v4 regex — 8-4-4-4-12 hex digits
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/** Extract projectId from a pathname. Returns null for non-UUID segments (like "new"). */
 function extractProjectId(pathname: string): string | null {
   const match = pathname.match(/^\/projects\/([^/]+)/)
-  return match?.[1] ?? null
+  const segment = match?.[1]
+  return segment && UUID_RE.test(segment) ? segment : null
 }
 
 export function Sidebar({ userEmail }: SidebarProps) {

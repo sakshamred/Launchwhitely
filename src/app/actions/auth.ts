@@ -1,64 +1,27 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { ensureProfile } from '@/lib/profile'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { z } from 'zod'
+import { createClient } from '@/lib/supabase/server'
 
-export type AuthActionState = {
-  error?: string
-  success?: string
-} | null
+export async function signInWithGoogle(next?: string): Promise<never> {
+  const supabase = await createClient()
+  const headerList = await headers()
+  const origin = headerList.get('origin') ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : '/projects'
 
-const credentialsSchema = z.object({
-  email: z.email().trim(),
-  password: z.string().min(8),
-})
-
-export async function signIn(
-  _state: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
-  const parsed = credentialsSchema.safeParse({
-    email: formData.get('email'),
-    password: formData.get('password'),
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(safeNext)}`,
+    },
   })
-  if (!parsed.success) {
-    return { error: 'Enter a valid email and an 8+ character password.' }
+
+  if (error) {
+    redirect(`/login?error=${encodeURIComponent(error.message)}`)
   }
 
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.signInWithPassword(parsed.data)
-  if (error) return { error: error.message }
-  await ensureProfile(data.user)
-
-  redirect('/projects')
-}
-
-export async function signUp(
-  _state: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
-  const parsed = credentialsSchema.safeParse({
-    email: formData.get('email'),
-    password: formData.get('password'),
-  })
-  if (!parsed.success) {
-    return { error: 'Enter a valid email and an 8+ character password.' }
-  }
-
-  const origin = (await headers()).get('origin')
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.signUp({
-    ...parsed.data,
-    options: origin ? { emailRedirectTo: `${origin}/auth/callback` } : undefined,
-  })
-  if (error) return { error: error.message }
-  if (data.user) await ensureProfile(data.user)
-  if (data.session) redirect('/projects')
-
-  return { success: 'Check your email to confirm your account.' }
+  redirect(data.url)
 }
 
 export async function signOut(): Promise<never> {

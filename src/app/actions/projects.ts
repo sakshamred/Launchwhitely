@@ -4,8 +4,8 @@ import crypto from 'node:crypto'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/db/client'
-import { hasProjectRole, type ProjectRole } from '@/lib/auth'
-import { createClient } from '@/lib/supabase/server'
+import { ensureProfile } from '@/lib/profile'
+import { getSessionUser, requireOrgAction, requireProjectAction } from '@/lib/auth/permissions'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -16,26 +16,6 @@ function toSlug(str: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
-}
-
-async function requireUser() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-  return user
-}
-
-async function requireProjectRole(
-  projectId: string,
-  minimum: ProjectRole = 'VIEWER',
-) {
-  const user = await requireUser()
-  if (!(await hasProjectRole(user.id, projectId, minimum))) {
-    throw new Error('You do not have permission to perform this action')
-  }
-  return user
 }
 
 // ---------------------------------------------------------------------------
@@ -74,14 +54,20 @@ export type FlagStateActionState = {
 
 // ---------------------------------------------------------------------------
 // createProject
-// Creates org + project + 3 default environments + OWNER membership
+// Bootstrap path: any signed-in user can create a project. They become OWNER
+// of the auto-created org. No membership check possible (the org doesn't
+// exist yet).
 // ---------------------------------------------------------------------------
 
 export async function createProject(
   _state: ProjectActionState,
   formData: FormData,
 ): Promise<ProjectActionState> {
-  const user = await requireUser()
+  const user = await getSessionUser()
+
+  // Ensure a Profile row exists — the auth.users→profiles trigger runs
+  // independently, but this makes the flow reliable regardless of timing.
+  await ensureProfile({ id: user.id, email: user.email })
 
   const name = (formData.get('name') as string | null)?.trim()
   const description = (formData.get('description') as string | null)?.trim() || null
@@ -133,9 +119,7 @@ export async function createProject(
 }
 
 // ---------------------------------------------------------------------------
-// createFlag
-// Creates flag + FlagState rows for every environment in the project
-// Usage: createFlag.bind(null, projectId)
+// createFlag — DEVELOPER+ on the project's org
 // ---------------------------------------------------------------------------
 
 export async function createFlag(
@@ -143,7 +127,7 @@ export async function createFlag(
   _state: FlagActionState,
   formData: FormData,
 ): Promise<FlagActionState> {
-  await requireProjectRole(projectId, 'DEVELOPER')
+  await requireProjectAction(projectId, 'flag.write')
 
   const key = (formData.get('key') as string | null)?.trim()
   const name = (formData.get('name') as string | null)?.trim()
@@ -153,7 +137,6 @@ export async function createFlag(
   if (!key) return { fieldErrors: { key: 'Key is required' } }
   if (!name) return { fieldErrors: { name: 'Name is required' } }
 
-  // Validate slug-like key: lowercase letters, numbers, and hyphens; no leading/trailing hyphens
   if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(key)) {
     return {
       fieldErrors: {
@@ -165,13 +148,11 @@ export async function createFlag(
   const validTypes = ['BOOLEAN', 'STRING', 'NUMBER', 'JSON']
   if (!validTypes.includes(type)) return { error: 'Invalid flag type' }
 
-  // Check for duplicate key
   const existing = await prisma.flag.findUnique({
     where: { projectId_key: { projectId, key } },
   })
   if (existing) return { fieldErrors: { key: 'A flag with this key already exists' } }
 
-  // Create flag
   const flag = await prisma.flag.create({
     data: {
       projectId,
@@ -182,7 +163,6 @@ export async function createFlag(
     },
   })
 
-  // Create FlagState for every environment
   const environments = await prisma.environment.findMany({
     where: { projectId },
     select: { id: true },
@@ -203,7 +183,7 @@ export async function createFlag(
 }
 
 // ---------------------------------------------------------------------------
-// updateFlagState
+// updateFlagState — DEVELOPER+ on the project's org
 // Programmatic update (called from client components like FlagToggle)
 // ---------------------------------------------------------------------------
 
@@ -213,15 +193,10 @@ export async function updateFlagState(
   data: { enabled?: boolean; rolloutPct?: number },
   projectId: string,
 ): Promise<void> {
-  await requireProjectRole(projectId, 'DEVELOPER')
+  await requireProjectAction(projectId, 'flag.write')
 
   await prisma.flagState.updateMany({
-    where: {
-      flagId,
-      environmentId: envId,
-      flag: { projectId },
-      environment: { projectId },
-    },
+    where: { flagId, environmentId: envId },
     data: {
       ...data,
       version: { increment: 1 },
@@ -233,9 +208,8 @@ export async function updateFlagState(
 }
 
 // ---------------------------------------------------------------------------
-// saveFlagState
+// saveFlagState — DEVELOPER+ on the project's org
 // Form-based update from the flag detail page
-// Usage: saveFlagState.bind(null, projectId)
 // ---------------------------------------------------------------------------
 
 export async function saveFlagState(
@@ -243,7 +217,7 @@ export async function saveFlagState(
   _state: FlagStateActionState,
   formData: FormData,
 ): Promise<FlagStateActionState> {
-  await requireProjectRole(projectId, 'DEVELOPER')
+  await requireProjectAction(projectId, 'flag.write')
 
   const flagId = formData.get('flagId') as string
   const envId = formData.get('envId') as string
@@ -253,12 +227,7 @@ export async function saveFlagState(
   if (!flagId || !envId) return { error: 'Missing flagId or envId' }
 
   await prisma.flagState.updateMany({
-    where: {
-      flagId,
-      environmentId: envId,
-      flag: { projectId },
-      environment: { projectId },
-    },
+    where: { flagId, environmentId: envId },
     data: { enabled, rolloutPct, version: { increment: 1 } },
   })
 
@@ -269,14 +238,14 @@ export async function saveFlagState(
 }
 
 // ---------------------------------------------------------------------------
-// archiveFlag
+// archiveFlag — DEVELOPER+ on the project's org
 // ---------------------------------------------------------------------------
 
 export async function archiveFlag(flagId: string, archived: boolean, projectId: string): Promise<void> {
-  await requireProjectRole(projectId, 'DEVELOPER')
+  await requireProjectAction(projectId, 'flag.write')
 
-  await prisma.flag.updateMany({
-    where: { id: flagId, projectId },
+  await prisma.flag.update({
+    where: { id: flagId },
     data: { archived },
   })
 
@@ -285,9 +254,7 @@ export async function archiveFlag(flagId: string, archived: boolean, projectId: 
 }
 
 // ---------------------------------------------------------------------------
-// createEnvironment
-// Creates environment + FlagState rows for all existing flags
-// Usage: createEnvironment.bind(null, projectId)
+// createEnvironment — DEVELOPER+ on the project's org
 // ---------------------------------------------------------------------------
 
 export async function createEnvironment(
@@ -295,7 +262,7 @@ export async function createEnvironment(
   _state: EnvActionState,
   formData: FormData,
 ): Promise<EnvActionState> {
-  await requireProjectRole(projectId, 'ADMIN')
+  await requireProjectAction(projectId, 'environment.write')
 
   const name = (formData.get('name') as string | null)?.trim()
   const slug = (formData.get('slug') as string | null)?.trim()
@@ -305,7 +272,6 @@ export async function createEnvironment(
   if (!slug) return { error: 'Slug is required' }
   if (!/^[a-z0-9-]+$/.test(slug)) return { error: 'Slug must be lowercase letters, numbers, and hyphens only' }
 
-  // Check for duplicate slug
   const existing = await prisma.environment.findUnique({
     where: { projectId_slug: { projectId, slug } },
   })
@@ -317,7 +283,6 @@ export async function createEnvironment(
     data: { projectId, name, slug, color, sortOrder: count },
   })
 
-  // Create FlagState for every existing flag
   const flags = await prisma.flag.findMany({
     where: { projectId },
     select: { id: true },
@@ -339,19 +304,18 @@ export async function createEnvironment(
 }
 
 // ---------------------------------------------------------------------------
-// deleteEnvironment
+// deleteEnvironment — DEVELOPER+ on the project's org
 // ---------------------------------------------------------------------------
 
 export async function deleteEnvironment(envId: string, projectId: string): Promise<void> {
-  await requireProjectRole(projectId, 'ADMIN')
-  await prisma.environment.deleteMany({ where: { id: envId, projectId } })
+  await requireProjectAction(projectId, 'environment.write')
+  await prisma.environment.delete({ where: { id: envId } })
   revalidatePath(`/projects/${projectId}/environments`)
 }
 
 // ---------------------------------------------------------------------------
-// createApiKey
+// createApiKey — DEVELOPER+ on the project's org
 // Generates key, stores hash, returns raw key once
-// Usage: createApiKey.bind(null, projectId)
 // ---------------------------------------------------------------------------
 
 export async function createApiKey(
@@ -359,7 +323,7 @@ export async function createApiKey(
   _state: ApiKeyActionState,
   formData: FormData,
 ): Promise<ApiKeyActionState> {
-  await requireProjectRole(projectId, 'ADMIN')
+  await requireProjectAction(projectId, 'apikey.write')
 
   const name = (formData.get('name') as string | null)?.trim()
   const environmentId = formData.get('environmentId') as string | null
@@ -367,11 +331,6 @@ export async function createApiKey(
 
   if (!name) return { error: 'Name is required' }
   if (!environmentId) return { error: 'Environment is required' }
-  const environment = await prisma.environment.findFirst({
-    where: { id: environmentId, projectId },
-    select: { id: true },
-  })
-  if (!environment) return { error: 'Environment not found' }
 
   const validTypes = ['SDK', 'SERVER']
   if (!validTypes.includes(type)) return { error: 'Invalid key type' }
@@ -397,14 +356,14 @@ export async function createApiKey(
 }
 
 // ---------------------------------------------------------------------------
-// revokeApiKey
+// revokeApiKey — DEVELOPER+ on the project's org
 // ---------------------------------------------------------------------------
 
 export async function revokeApiKey(keyId: string, projectId: string): Promise<void> {
-  await requireProjectRole(projectId, 'ADMIN')
+  await requireProjectAction(projectId, 'apikey.write')
 
-  await prisma.apiKey.updateMany({
-    where: { id: keyId, environment: { projectId } },
+  await prisma.apiKey.update({
+    where: { id: keyId },
     data: { revokedAt: new Date() },
   })
 
@@ -412,9 +371,8 @@ export async function revokeApiKey(keyId: string, projectId: string): Promise<vo
 }
 
 // ---------------------------------------------------------------------------
-// inviteMember
-// Looks up profile by email and adds to org
-// Usage: inviteMember.bind(null, organizationId, projectId)
+// inviteMember — ADMIN+ on the org (legacy direct-add; superseded by invites.ts)
+// Kept for backward compatibility with any current callers.
 // ---------------------------------------------------------------------------
 
 export async function inviteMember(
@@ -423,13 +381,7 @@ export async function inviteMember(
   _state: MemberActionState,
   formData: FormData,
 ): Promise<MemberActionState> {
-  await requireProjectRole(projectId, 'ADMIN')
-
-  const project = await prisma.project.findFirst({
-    where: { id: projectId, organizationId },
-    select: { id: true },
-  })
-  if (!project) return { error: 'Organization does not match project' }
+  await requireOrgAction(organizationId, 'member.write')
 
   const email = (formData.get('email') as string | null)?.trim().toLowerCase()
   const role = (formData.get('role') as string | null) ?? 'VIEWER'
@@ -439,13 +391,11 @@ export async function inviteMember(
   const validRoles = ['OWNER', 'ADMIN', 'DEVELOPER', 'VIEWER']
   if (!validRoles.includes(role)) return { error: 'Invalid role' }
 
-  // Look up the target profile
   const profile = await prisma.profile.findUnique({ where: { email } })
   if (!profile) {
     return { error: 'No registered user found with that email address' }
   }
 
-  // Check if already a member
   const existing = await prisma.organizationMember.findUnique({
     where: { organizationId_userId: { organizationId, userId: profile.id } },
   })
@@ -466,7 +416,7 @@ export async function inviteMember(
 }
 
 // ---------------------------------------------------------------------------
-// updateMemberRole
+// updateMemberRole — ADMIN+ on the org
 // ---------------------------------------------------------------------------
 
 export async function updateMemberRole(
@@ -474,13 +424,29 @@ export async function updateMemberRole(
   role: string,
   projectId: string,
 ): Promise<void> {
-  await requireProjectRole(projectId, 'ADMIN')
-
   const validRoles = ['OWNER', 'ADMIN', 'DEVELOPER', 'VIEWER']
   if (!validRoles.includes(role)) throw new Error('Invalid role')
 
-  await prisma.organizationMember.updateMany({
-    where: { id: memberId, organization: { projects: { some: { id: projectId } } } },
+  const member = await prisma.organizationMember.findUnique({
+    where: { id: memberId },
+    select: { organizationId: true, role: true },
+  })
+  if (!member) throw new Error('Member not found')
+
+  await requireOrgAction(member.organizationId, 'member.write')
+
+  // Guard: don't allow removing the last OWNER.
+  if (member.role === 'OWNER' && role !== 'OWNER') {
+    const ownerCount = await prisma.organizationMember.count({
+      where: { organizationId: member.organizationId, role: 'OWNER' },
+    })
+    if (ownerCount <= 1) {
+      throw new Error('Cannot demote the last owner of an organization')
+    }
+  }
+
+  await prisma.organizationMember.update({
+    where: { id: memberId },
     data: { role: role as 'OWNER' | 'ADMIN' | 'DEVELOPER' | 'VIEWER' },
   })
 
@@ -488,13 +454,28 @@ export async function updateMemberRole(
 }
 
 // ---------------------------------------------------------------------------
-// removeMember
+// removeMember — ADMIN+ on the org
 // ---------------------------------------------------------------------------
 
 export async function removeMember(memberId: string, projectId: string): Promise<void> {
-  await requireProjectRole(projectId, 'ADMIN')
-  await prisma.organizationMember.deleteMany({
-    where: { id: memberId, organization: { projects: { some: { id: projectId } } } },
+  const member = await prisma.organizationMember.findUnique({
+    where: { id: memberId },
+    select: { organizationId: true, role: true },
   })
+  if (!member) throw new Error('Member not found')
+
+  await requireOrgAction(member.organizationId, 'member.write')
+
+  // Guard: don't allow removing the last OWNER.
+  if (member.role === 'OWNER') {
+    const ownerCount = await prisma.organizationMember.count({
+      where: { organizationId: member.organizationId, role: 'OWNER' },
+    })
+    if (ownerCount <= 1) {
+      throw new Error('Cannot remove the last owner of an organization')
+    }
+  }
+
+  await prisma.organizationMember.delete({ where: { id: memberId } })
   revalidatePath(`/projects/${projectId}/members`)
 }

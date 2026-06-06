@@ -25,6 +25,7 @@ model Profile {
 
   memberships OrganizationMember[]
   auditLogs   AuditLog[]
+  invitesSent Invite[]
 
   @@map("profiles")
 }
@@ -42,6 +43,7 @@ model Organization {
 
   members  OrganizationMember[]
   projects Project[]
+  invites  Invite[]
 
   @@map("organizations")
 }
@@ -205,6 +207,30 @@ model ApiKey {
   environment Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
 
   @@map("api_keys")
+}
+
+// ---------------------------------------------------------------------------
+// Invites  (token-based, allows inviting people who haven't signed up yet)
+// ---------------------------------------------------------------------------
+
+model Invite {
+  id             String     @id @default(uuid()) @db.Uuid
+  organizationId String     @map("organization_id") @db.Uuid
+  email          String
+  role           MemberRole @default(VIEWER)
+  token          String     @unique
+  invitedById    String     @map("invited_by") @db.Uuid
+  expiresAt      DateTime   @map("expires_at")
+  acceptedAt     DateTime?  @map("accepted_at")
+  revokedAt      DateTime?  @map("revoked_at")
+  createdAt      DateTime   @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedBy    Profile      @relation(fields: [invitedById], references: [id])
+
+  @@index([organizationId, email])
+  @@index([email])
+  @@map("invites")
 }
 
 // ---------------------------------------------------------------------------

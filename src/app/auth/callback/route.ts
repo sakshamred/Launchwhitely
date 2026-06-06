@@ -1,24 +1,24 @@
-import { NextResponse } from 'next/server'
-import { ensureProfile } from '@/lib/profile'
+import { type NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-export async function GET(request: Request) {
-  const url = new URL(request.url)
-  const code = url.searchParams.get('code')
-  const requestedNext = url.searchParams.get('next')
-  const next =
-    requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
-      ? requestedNext
-      : '/projects'
+// Handles the redirect from Supabase Auth after the user authorises Google.
+// Exchanges the `code` for a session, then redirects to `next` (default /projects).
+export async function GET(request: NextRequest) {
+  const { searchParams, origin } = request.nextUrl
+  const code = searchParams.get('code')
+  const nextRaw = searchParams.get('next') ?? '/projects'
+  const next = nextRaw.startsWith('/') && !nextRaw.startsWith('//') ? nextRaw : '/projects'
 
   if (code) {
     const supabase = await createClient()
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      if (data.user) await ensureProfile(data.user)
-      return NextResponse.redirect(new URL(next, url.origin))
+      return NextResponse.redirect(new URL(next, origin))
     }
+    return NextResponse.redirect(
+      new URL(`/login?error=${encodeURIComponent(error.message)}`, origin),
+    )
   }
 
-  return NextResponse.redirect(new URL('/login?error=confirmation_failed', url.origin))
+  return NextResponse.redirect(new URL('/login?error=missing_code', origin))
 }

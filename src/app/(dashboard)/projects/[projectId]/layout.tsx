@@ -10,8 +10,14 @@ type Props = {
   params: Promise<{ projectId: string }>
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export default async function ProjectLayout({ children, params }: Props) {
   const { projectId } = await params
+
+  // Guard: non-UUID segments like "new" should never reach this layout.
+  // The sidebar already filters them out, but a direct URL should not 500.
+  if (!UUID_RE.test(projectId)) redirect('/projects')
 
   const supabase = await createClient()
   const {
