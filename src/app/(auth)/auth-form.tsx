@@ -15,20 +15,18 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
   )
 
   return (
-    <div className="w-full max-w-sm">
-      <div className="flex items-center gap-2.5 mb-6">
-        <div className="flex items-center justify-center w-9 h-9 bg-indigo-600 rounded-lg">
-          <Flag className="h-4 w-4 text-white" />
+    <div className="w-full">
+      <div className="flex flex-col items-center text-center mb-7">
+        <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-[0_0_24px_-4px_rgba(99,102,241,0.7)] mb-4">
+          <Flag className="h-5 w-5 text-white" />
         </div>
-        <div>
-          <h1 className="text-zinc-100 font-semibold">Launchwhitly</h1>
-          <p className="text-zinc-500 text-xs">
-            {mode === 'login' ? 'Sign in to the control plane' : 'Create your account'}
-          </p>
-        </div>
+        <h1 className="text-zinc-50 font-semibold text-xl tracking-tight">Launchwhitly</h1>
+        <p className="text-zinc-500 text-sm mt-1">
+          {mode === 'login' ? 'Sign in to your control plane' : 'Create your account'}
+        </p>
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+      <div className="bg-zinc-900/70 backdrop-blur-sm border border-zinc-800 rounded-2xl p-6 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)]">
         {state?.error && <p className="mb-4 text-sm text-red-400">{state.error}</p>}
         {state?.success && <p className="mb-4 text-sm text-green-400">{state.success}</p>}
 

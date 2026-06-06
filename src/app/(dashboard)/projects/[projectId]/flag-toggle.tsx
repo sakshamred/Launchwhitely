@@ -27,7 +27,7 @@ export function FlagToggle({ flagId, envId, projectId, initialEnabled }: FlagTog
       checked={enabled}
       onChange={handleChange}
       disabled={isPending}
-      size="sm"
+      size="md"
     />
   )
 }

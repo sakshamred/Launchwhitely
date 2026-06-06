@@ -9,8 +9,8 @@ export interface ToggleProps {
 
 const sizes = {
   sm: {
-    track: 'w-8 h-4',
-    thumb: 'w-3 h-3',
+    track: 'w-9 h-5',
+    thumb: 'w-3.5 h-3.5',
     on: 'translate-x-4',
     off: 'translate-x-0.5',
   },
@@ -33,20 +33,26 @@ export function Toggle({ checked, onChange, disabled = false, size = 'md' }: Tog
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={[
-        'relative inline-flex items-center rounded-full transition-colors',
+        'group relative inline-flex items-center rounded-full',
+        'transition-colors duration-300 ease-out',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
         'focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
+        'disabled:opacity-40 disabled:cursor-not-allowed',
         track,
-        checked ? 'bg-indigo-600' : 'bg-zinc-700',
+        checked
+          ? 'bg-indigo-600 shadow-[0_0_0_1px_rgba(99,102,241,0.4),0_0_14px_-2px_rgba(99,102,241,0.7)]'
+          : 'bg-zinc-700 hover:bg-zinc-600',
       ].join(' ')}
     >
       <span
         className={[
-          'inline-block bg-white rounded-full shadow transition-transform',
+          'pointer-events-none inline-block rounded-full bg-white shadow-sm',
+          'transition-transform duration-300',
+          'group-active:scale-90',
           thumb,
           checked ? on : off,
         ].join(' ')}
+        style={{ transitionTimingFunction: 'var(--ease-spring)' }}
       />
     </button>
   )

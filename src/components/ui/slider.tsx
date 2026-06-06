@@ -38,7 +38,8 @@ export function Slider({
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full h-2 bg-zinc-700 rounded-full appearance-none cursor-pointer accent-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="lw-range"
+          style={{ ['--pct' as string]: `${((value - min) / (max - min)) * 100}%` }}
         />
       </div>
     </div>
