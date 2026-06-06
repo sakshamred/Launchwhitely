@@ -17,6 +17,9 @@ export function AuthForm({ mode, next }: Props) {
         </div>
         <div>
           <h1 className="text-zinc-100 font-semibold text-lg">Launchwhitly</h1>
+          <p className="text-zinc-500 text-sm">
+            {mode === 'login' ? 'Sign in to your control plane' : 'Create your account'}
+          </p>
         </div>
       </div>
 

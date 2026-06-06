@@ -14,13 +14,13 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<Variant, string> = {
   default:
-    'bg-zinc-100 text-zinc-950 hover:bg-white active:bg-zinc-200 disabled:hover:bg-zinc-100',
+    'bg-indigo-600 hover:bg-indigo-500 text-white border-transparent shadow-[0_1px_2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12)] disabled:hover:bg-indigo-600',
   outline:
-    'bg-transparent border-zinc-800 text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 active:border-zinc-500',
+    'bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800 hover:border-zinc-600',
   ghost:
     'bg-transparent border-transparent text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60',
   danger:
-    'bg-red-600 text-white hover:bg-red-500 active:bg-red-700 disabled:hover:bg-red-600',
+    'bg-red-600 hover:bg-red-500 text-white border-transparent shadow-[0_1px_2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12)] disabled:hover:bg-red-600',
 }
 
 const sizeClasses: Record<Size, string> = {
@@ -42,11 +42,10 @@ export function Button({
     <button
       disabled={disabled || loading}
       className={[
-        'inline-flex items-center justify-center border font-medium',
-        'transition-all duration-150',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50',
-        'focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950',
-        'disabled:opacity-40 disabled:cursor-not-allowed',
+        'inline-flex items-center justify-center rounded-lg border font-medium',
+        'transition-all duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2',
+        'focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950',
+        'disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100',
         variantClasses[variant],
         sizeClasses[size],
         className,
