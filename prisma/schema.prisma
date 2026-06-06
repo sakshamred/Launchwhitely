@@ -1,0 +1,232 @@
+// Prisma schema for Launchwhitly – open-source feature flag platform
+// Docs: https://www.prisma.io/docs/orm/v6/overview/databases/supabase
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Identity
+// ---------------------------------------------------------------------------
+
+// Mirrors auth.users – same UUID, created by a trigger on signup
+model Profile {
+  id        String   @id @db.Uuid
+  email     String   @unique
+  name      String?
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  memberships OrganizationMember[]
+  auditLogs   AuditLog[]
+
+  @@map("profiles")
+}
+
+// ---------------------------------------------------------------------------
+// Organizations
+// ---------------------------------------------------------------------------
+
+model Organization {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members  OrganizationMember[]
+  projects Project[]
+
+  @@map("organizations")
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  DEVELOPER
+  VIEWER
+}
+
+model OrganizationMember {
+  id             String     @id @default(uuid()) @db.Uuid
+  organizationId String     @map("organization_id") @db.Uuid
+  userId         String     @map("user_id") @db.Uuid
+  role           MemberRole @default(VIEWER)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         Profile      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("organization_members")
+}
+
+// ---------------------------------------------------------------------------
+// Projects & Environments
+// ---------------------------------------------------------------------------
+
+model Project {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  name           String
+  slug           String
+  description    String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  environments Environment[]
+  flags        Flag[]
+  auditLogs    AuditLog[]
+
+  @@unique([organizationId, slug])
+  @@map("projects")
+}
+
+model Environment {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @map("project_id") @db.Uuid
+  name      String   // "Production", "Staging", "Development"
+  slug      String   // "production", "staging", "development"
+  color     String   @default("#6366f1")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  apiKeys    ApiKey[]
+  flagStates FlagState[]
+  segments   Segment[]
+
+  @@unique([projectId, slug])
+  @@map("environments")
+}
+
+// ---------------------------------------------------------------------------
+// Feature Flags
+// ---------------------------------------------------------------------------
+
+enum FlagType {
+  BOOLEAN
+  STRING
+  NUMBER
+  JSON
+}
+
+// Flag definition is project-scoped; the same key exists across all environments
+model Flag {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @map("project_id") @db.Uuid
+  key         String   // e.g. "checkout-v2"  – immutable after creation
+  name        String
+  description String?
+  type        FlagType @default(BOOLEAN)
+  archived    Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  states  FlagState[]
+
+  @@unique([projectId, key])
+  @@map("flags")
+}
+
+// Per-environment configuration for a flag
+// version increments on every write – SDKs use it for cache busting
+model FlagState {
+  id            String   @id @default(uuid()) @db.Uuid
+  flagId        String   @map("flag_id") @db.Uuid
+  environmentId String   @map("environment_id") @db.Uuid
+  enabled       Boolean  @default(false)
+  rolloutPct    Int      @default(100) @map("rollout_pct") // 0-100
+  // JSON array of targeting rule objects (see rollout engine types)
+  rules         Json     @default("[]")
+  // JSON array of variant objects for A/B testing
+  variants      Json     @default("[]")
+  defaultValue  Json?    @map("default_value")
+  version       Int      @default(1)
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  flag        Flag        @relation(fields: [flagId], references: [id], onDelete: Cascade)
+  environment Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  @@unique([flagId, environmentId])
+  @@map("flag_states")
+}
+
+// ---------------------------------------------------------------------------
+// Segments  (reusable user groups for targeting)
+// ---------------------------------------------------------------------------
+
+model Segment {
+  id            String   @id @default(uuid()) @db.Uuid
+  environmentId String   @map("environment_id") @db.Uuid
+  name          String
+  key           String
+  description   String?
+  rules         Json     @default("[]")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  environment Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  @@unique([environmentId, key])
+  @@map("segments")
+}
+
+// ---------------------------------------------------------------------------
+// API Keys
+// ---------------------------------------------------------------------------
+
+enum ApiKeyType {
+  SDK    // client-side (read-only flag evaluation)
+  SERVER // server-side (full flag management access)
+}
+
+model ApiKey {
+  id            String     @id @default(uuid()) @db.Uuid
+  environmentId String     @map("environment_id") @db.Uuid
+  name          String
+  keyHash       String     @unique @map("key_hash") // SHA-256 of the raw key
+  keyPrefix     String     @map("key_prefix")       // first 8 chars for display
+  type          ApiKeyType @default(SDK)
+  lastUsedAt    DateTime?  @map("last_used_at")
+  revokedAt     DateTime?  @map("revoked_at")
+  createdAt     DateTime   @default(now()) @map("created_at")
+
+  environment Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  @@map("api_keys")
+}
+
+// ---------------------------------------------------------------------------
+// Audit Logs
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @map("project_id") @db.Uuid
+  actorId   String   @map("actor_id") @db.Uuid
+  // dot-separated action: "flag.enabled" | "flag.rollout_updated" | "environment.created" …
+  action    String
+  // human-readable resource identifier: "flag:checkout-v2" | "environment:production"
+  resource  String
+  prevValue Json?    @map("prev_value")
+  newValue  Json?    @map("new_value")
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  actor   Profile @relation(fields: [actorId], references: [id])
+
+  @@index([projectId, createdAt(sort: Desc)])
+  @@map("audit_logs")
+}

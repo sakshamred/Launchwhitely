@@ -1,0 +1,165 @@
+import { redirect } from 'next/navigation'
+import { Users } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/db/client'
+import { Header } from '@/components/layout/header'
+import { Badge } from '@/components/ui/badge'
+import { EmptyState } from '@/components/ui/empty-state'
+import { InviteMemberButton } from './invite-member-button'
+import { MemberActions } from './member-actions'
+
+type Props = {
+  params: Promise<{ projectId: string }>
+}
+
+type MemberRole = 'OWNER' | 'ADMIN' | 'DEVELOPER' | 'VIEWER'
+
+const roleBadgeVariant: Record<MemberRole, 'indigo' | 'warning' | 'success' | 'default'> = {
+  OWNER: 'indigo',
+  ADMIN: 'warning',
+  DEVELOPER: 'success',
+  VIEWER: 'default',
+}
+
+export default async function MembersPage({ params }: Props) {
+  const { projectId } = await params
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  // Get the project to find the org
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: { organizationId: true, name: true },
+  })
+  if (!project) redirect('/projects')
+
+  const { organizationId } = project
+
+  // Get current user's role
+  const currentMembership = await prisma.organizationMember.findUnique({
+    where: { organizationId_userId: { organizationId, userId: user.id } },
+    select: { role: true },
+  })
+
+  const members = await prisma.organizationMember.findMany({
+    where: { organizationId },
+    include: {
+      user: { select: { id: true, email: true, name: true, createdAt: true } },
+    },
+    orderBy: { createdAt: 'asc' },
+  })
+
+  const canManage =
+    currentMembership?.role === 'OWNER' || currentMembership?.role === 'ADMIN'
+
+  return (
+    <div className="flex flex-col">
+      <Header
+        title="Members"
+        actions={
+          canManage ? (
+            <InviteMemberButton
+              organizationId={organizationId}
+              projectId={projectId}
+            />
+          ) : undefined
+        }
+      />
+
+      <div className="p-6">
+        {members.length === 0 ? (
+          <EmptyState
+            icon={Users}
+            title="No members"
+            description="Invite team members to collaborate on this project."
+          />
+        ) : (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-800">
+                  <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                    Member
+                  </th>
+                  <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                    Joined
+                  </th>
+                  {canManage && (
+                    <th className="text-right px-4 py-3 text-zinc-500 font-medium text-xs uppercase tracking-wider">
+                      Actions
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800">
+                {members.map((member) => {
+                  const isCurrentUser = member.userId === user.id
+                  const role = member.role as MemberRole
+
+                  return (
+                    <tr key={member.id} className="hover:bg-zinc-800/40 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-indigo-600/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-indigo-400 text-xs font-medium">
+                              {(member.user.name ?? member.user.email)[0]?.toUpperCase() ?? '?'}
+                            </span>
+                          </div>
+                          <div>
+                            {member.user.name && (
+                              <p className="text-zinc-100 font-medium text-sm">
+                                {member.user.name}
+                                {isCurrentUser && (
+                                  <span className="ml-1.5 text-xs text-zinc-500">(you)</span>
+                                )}
+                              </p>
+                            )}
+                            <p className={`text-xs ${member.user.name ? 'text-zinc-500' : 'text-zinc-100 font-medium'}`}>
+                              {member.user.email}
+                              {!member.user.name && isCurrentUser && (
+                                <span className="ml-1.5 text-zinc-500">(you)</span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={roleBadgeVariant[role]}>{role}</Badge>
+                      </td>
+                      <td className="px-4 py-3 text-zinc-500 text-xs">
+                        {new Date(member.createdAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </td>
+                      {canManage && (
+                        <td className="px-4 py-3 text-right">
+                          {!isCurrentUser && (
+                            <MemberActions
+                              memberId={member.id}
+                              currentRole={role}
+                              projectId={projectId}
+                              memberName={member.user.name ?? member.user.email}
+                            />
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
