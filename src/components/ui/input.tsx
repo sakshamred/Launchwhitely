@@ -19,9 +19,9 @@ export function Input({ label, error, hint, className = '', id, ...props }: Inpu
       <input
         id={inputId}
         className={[
-          'h-9 bg-zinc-950 border border-zinc-800 text-zinc-100 rounded-lg px-3 text-sm',
+          'h-9 bg-white/[0.04] backdrop-blur-md border border-white/10 text-zinc-100 rounded-lg px-3 text-sm',
           'placeholder:text-zinc-600',
-          'focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-zinc-600',
+          'focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 focus:bg-white/[0.06]',
           'transition-all duration-150',
           error ? 'border-red-500/50 focus:ring-red-500/50' : '',
           className,

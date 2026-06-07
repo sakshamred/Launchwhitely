@@ -41,7 +41,7 @@ export function EnvSwitcher({ environments, current, projectId: _projectId }: En
       <select
         value={currentEnv.id}
         onChange={handleChange}
-        className="appearance-none bg-zinc-800/60 border border-zinc-800 text-zinc-300 rounded-md pl-5 pr-7 h-7 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-zinc-600 cursor-pointer hover:border-zinc-700 transition-colors"
+        className="appearance-none bg-white/[0.06] backdrop-blur-md border border-white/10 text-zinc-200 rounded-lg pl-5 pr-7 h-7 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-white/20 cursor-pointer hover:bg-white/[0.1] hover:border-white/20 transition-colors"
       >
         {environments.map((env) => (
           <option key={env.id} value={env.id}>

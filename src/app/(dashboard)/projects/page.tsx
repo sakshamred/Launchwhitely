@@ -55,7 +55,7 @@ export default async function ProjectsPage() {
         }
       />
 
-      <div className="flex-1 overflow-y-auto bg-dots p-6">
+      <div className="flex-1 overflow-y-auto p-6">
         {projects.length === 0 ? (
           <EmptyState
             icon={FolderKanban}
@@ -77,14 +77,14 @@ export default async function ProjectsPage() {
                 key={project.id}
                 href={`/projects/${project.id}`}
                 style={{ ['--i' as string]: i }}
-                className="group relative block bg-zinc-900/70 border border-zinc-800 rounded-xl p-5 transition-all duration-200 hover:border-zinc-700 hover:bg-zinc-900 hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.7)] hover:-translate-y-0.5"
+                className="glass glass-hover group relative block rounded-2xl p-5"
               >
-                <ArrowUpRight className="absolute right-4 top-4 h-4 w-4 text-zinc-600 opacity-0 -translate-y-0.5 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:text-zinc-300" />
+                <ArrowUpRight className="absolute right-4 top-4 h-4 w-4 text-zinc-600 opacity-0 -translate-y-0.5 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:text-indigo-300" />
 
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500/20 to-indigo-600/5 border border-indigo-500/20 flex-shrink-0">
-                    <FolderKanban className="h-4 w-4 text-indigo-400" />
+                  <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400/25 to-violet-600/10 border border-white/10 flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                    <FolderKanban className="h-4 w-4 text-indigo-300" />
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-zinc-100 font-semibold text-sm truncate group-hover:text-white transition-colors">
@@ -100,7 +100,7 @@ export default async function ProjectsPage() {
                 </p>
 
                 {/* Stats */}
-                <div className="flex items-center gap-4 pt-3 border-t border-zinc-800/80 text-xs text-zinc-500">
+                <div className="flex items-center gap-4 pt-3 border-t border-white/[0.06] text-xs text-zinc-500">
                   <span className="inline-flex items-center gap-1.5">
                     <ToggleLeft className="h-3.5 w-3.5 text-zinc-600" />
                     {project._count.flags} flag{project._count.flags !== 1 ? 's' : ''}

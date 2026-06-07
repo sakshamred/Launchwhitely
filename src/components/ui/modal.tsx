@@ -37,16 +37,16 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-md"
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative z-10 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800/70 flex-shrink-0">
+      <div className="glass-strong relative z-10 rounded-2xl w-full max-w-lg flex flex-col max-h-[90vh] animate-rise">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.07] flex-shrink-0">
           <h2 className="text-zinc-100 font-medium">{title}</h2>
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors rounded-md p-1 hover:bg-zinc-800"
+            className="text-zinc-500 hover:text-zinc-100 transition-colors rounded-md p-1 hover:bg-white/10"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
@@ -54,7 +54,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         </div>
         <div className="px-5 py-5 flex-1 overflow-y-auto">{children}</div>
         {footer && (
-          <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-zinc-800/70 flex-shrink-0 bg-zinc-900/50">
+          <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-white/[0.07] flex-shrink-0 bg-white/[0.02]">
             {footer}
           </div>
         )}

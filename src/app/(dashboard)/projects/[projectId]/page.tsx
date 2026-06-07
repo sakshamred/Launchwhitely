@@ -66,7 +66,7 @@ export default async function ProjectFlagsPage({ params, searchParams }: Props) 
         }
       />
 
-      <div className="flex-1 bg-dots">
+      <div className="flex-1">
         <div className="mx-auto max-w-4xl px-6 py-6">
           {flags.length === 0 ? (
             <EmptyState
@@ -128,12 +128,12 @@ export default async function ProjectFlagsPage({ params, searchParams }: Props) 
                       key={flag.id}
                       style={{ ["--i" as string]: i }}
                       className={[
-                        "group flex items-center gap-4 rounded-xl border bg-zinc-900/50 px-4 py-3.5 transition-all duration-200",
+                        "group flex items-center gap-4 rounded-xl border px-4 py-3.5 backdrop-blur-xl transition-all duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
                         flag.archived
-                          ? "border-zinc-800/50 opacity-60"
+                          ? "border-white/[0.05] bg-white/[0.02] opacity-60"
                           : enabled
-                            ? "border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900"
-                            : "border-zinc-800/70 hover:border-zinc-800 hover:bg-zinc-900/70",
+                            ? "border-white/10 bg-white/[0.05] hover:border-white/20 hover:bg-white/[0.07]"
+                            : "border-white/[0.06] bg-white/[0.03] hover:border-white/10 hover:bg-white/[0.05]",
                       ].join(" ")}
                     >
                       {/* Toggle */}

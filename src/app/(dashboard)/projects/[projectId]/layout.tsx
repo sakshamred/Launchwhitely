@@ -41,7 +41,7 @@ export default async function ProjectLayout({ children, params }: Props) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex items-center justify-between px-6 h-11 border-b border-zinc-800/60 bg-black/40 flex-shrink-0">
+      <div className="flex items-center justify-between px-6 h-11 border-b border-white/[0.06] bg-black/20 backdrop-blur-xl flex-shrink-0">
         <span className="text-zinc-300 text-sm font-medium">{project.name}</span>
         {environments.length > 0 && (
           <Suspense

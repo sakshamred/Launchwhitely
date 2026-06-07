@@ -12,7 +12,7 @@ export interface HeaderProps {
 
 export function Header({ title, subtitle, eyebrow, actions }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-6 h-16 flex-shrink-0 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-6 h-16 flex-shrink-0 border-b border-white/[0.07] bg-black/20 backdrop-blur-2xl">
       <div className="min-w-0">
         {eyebrow && <div className="mb-0.5">{eyebrow}</div>}
         <h1 className="text-zinc-50 font-semibold text-lg leading-tight tracking-tight truncate">

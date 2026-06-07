@@ -12,9 +12,9 @@ export function Card({ children, className = '', title, description, actions }: 
   const hasHeader = Boolean(title ?? description ?? actions)
 
   return (
-    <div className={`bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden ${className}`}>
+    <div className={`glass rounded-2xl overflow-hidden ${className}`}>
       {hasHeader && (
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-800/70">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
           <div className="flex-1 min-w-0">
             {title && (
               <h3 className="text-zinc-100 font-medium text-sm">{title}</h3>

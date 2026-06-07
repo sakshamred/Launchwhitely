@@ -12,7 +12,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   if (!user) redirect('/login')
 
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-950">
+    <div className="app-shell flex h-screen overflow-hidden">
       <Sidebar userEmail={user.email ?? undefined} />
       <div className="flex-1 flex flex-col overflow-hidden">
         {children}

@@ -10,7 +10,7 @@ export interface BadgeProps {
 }
 
 const variantClasses: Record<Exclude<Variant, 'custom'>, string> = {
-  default: 'bg-zinc-800/60 text-zinc-400 border-zinc-700/50',
+  default: 'bg-white/[0.06] text-zinc-300 border-white/10 backdrop-blur-md',
   success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   danger: 'bg-red-500/10 text-red-400 border-red-500/20',

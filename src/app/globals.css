@@ -2,8 +2,9 @@
 
 /* ---------------------------------------------------------------------------
    Launchwhitly design system
-   Dark-only, minimal, one accent. Surfaces are layered neutrals; indigo is
-   reserved for intent (primary actions, "on" states, focus).
+   Dark glassmorphism. A single ambient aurora-lit canvas; surfaces are frosted
+   glass — translucent, blurred, with a hairline top highlight. Indigo→violet is
+   reserved for intent (primary actions, "on" states, focus). No warm/gold tones.
 --------------------------------------------------------------------------- */
 
 @theme inline {
@@ -14,15 +15,25 @@
 }
 
 :root {
-  --background: #09090b;
+  --background: #08080b;
   --foreground: #fafafa;
 
-  /* palette (zinc + indigo) */
+  /* palette (zinc + indigo→violet accent) */
   --zinc-700: #3f3f46;
   --zinc-800: #27272a;
+  --zinc-900: #18181b;
   --indigo-400: #818cf8;
   --indigo-500: #6366f1;
   --indigo-600: #4f46e5;
+  --violet-500: #8b5cf6;
+  --sky-500: #38bdf8;
+
+  /* glass tokens */
+  --glass-bg: color-mix(in oklab, #1a1a20 62%, transparent);
+  --glass-bg-strong: color-mix(in oklab, #18181d 82%, transparent);
+  --glass-border: color-mix(in oklab, #ffffff 9%, transparent);
+  --glass-highlight: color-mix(in oklab, #ffffff 7%, transparent);
+  --glass-blur: 18px;
 
   /* easing */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -38,10 +49,15 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  font-feature-settings: "cv11", "ss01";
+  font-feature-settings: "cv11", "ss01", "cv01";
+  letter-spacing: -0.011em;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4 {
+  letter-spacing: -0.02em;
 }
 
 /* Selection ------------------------------------------------------------- */
@@ -125,10 +141,89 @@ input[type="range"].lw-range::-moz-range-thumb {
 }
 
 /* ---------------------------------------------------------------------------
+   Ambient canvas — the lit backdrop that glass surfaces blur over.
+   Soft indigo (top-left) + violet (bottom-right) auroras over near-black.
+--------------------------------------------------------------------------- */
+.app-shell {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(
+      48rem 38rem at 8% -8%,
+      color-mix(in oklab, var(--indigo-600) 22%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      44rem 40rem at 104% 108%,
+      color-mix(in oklab, var(--violet-500) 18%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(
+      36rem 30rem at 92% 4%,
+      color-mix(in oklab, var(--sky-500) 9%, transparent),
+      transparent 60%
+    ),
+    var(--background);
+}
+/* faint grid woven into the canvas for depth */
+.app-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, #fff 3%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, #fff 3%, transparent) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: radial-gradient(120% 100% at 50% 0%, #000 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(120% 100% at 50% 0%, #000 30%, transparent 80%);
+}
+
+/* ---------------------------------------------------------------------------
+   Glass surfaces
+--------------------------------------------------------------------------- */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.glass-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 8px 32px -12px rgba(0, 0, 0, 0.7);
+}
+/* lift on hover — pairs with .glass */
+.glass-hover {
+  transition:
+    transform 0.2s var(--ease-out-expo),
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+.glass-hover:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, #fff 16%, transparent);
+  background: color-mix(in oklab, #1f1f27 70%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, #fff 10%, transparent),
+    0 18px 40px -18px rgba(0, 0, 0, 0.85),
+    0 0 0 1px color-mix(in oklab, var(--indigo-500) 10%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
    Background textures
 --------------------------------------------------------------------------- */
 .bg-dots {
-  background-image: radial-gradient(var(--zinc-800) 1px, transparent 1px);
+  background-image: radial-gradient(color-mix(in oklab, #fff 4%, transparent) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 .bg-grid {

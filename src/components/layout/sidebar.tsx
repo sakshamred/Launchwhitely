@@ -40,10 +40,10 @@ export function Sidebar({ userEmail }: SidebarProps) {
   const projectId = extractProjectId(pathname)
 
   return (
-    <aside className="w-64 h-full bg-zinc-950 border-r border-zinc-800/80 flex flex-col flex-shrink-0">
+    <aside className="w-64 h-full bg-black/30 backdrop-blur-xl border-r border-white/[0.07] flex flex-col flex-shrink-0">
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 h-16 border-b border-zinc-800/80">
-        <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-[0_0_14px_-2px_rgba(99,102,241,0.6)]">
+      <div className="flex items-center gap-2.5 px-5 h-16 border-b border-white/[0.06]">
+        <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-400 via-indigo-500 to-violet-600 shadow-[0_0_18px_-2px_rgba(99,102,241,0.7),inset_0_1px_0_rgba(255,255,255,0.25)]">
           <Flag className="h-4 w-4 text-white" />
         </div>
         <span className="font-semibold text-zinc-50 text-[15px] tracking-tight">
@@ -95,10 +95,10 @@ export function Sidebar({ userEmail }: SidebarProps) {
       </nav>
 
       {/* User / Sign-out */}
-      <div className="border-t border-zinc-800/80 p-3">
+      <div className="border-t border-white/[0.06] p-3">
         <div className="flex items-center gap-2.5 px-2 py-1.5">
           {userEmail && (
-            <div className="flex items-center justify-center w-7 h-7 rounded-full bg-zinc-800 text-zinc-300 text-xs font-semibold uppercase flex-shrink-0">
+            <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500/80 to-violet-600/80 text-white text-xs font-semibold uppercase flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
               {userEmail.charAt(0)}
             </div>
           )}
@@ -107,7 +107,7 @@ export function Sidebar({ userEmail }: SidebarProps) {
             <button
               type="submit"
               aria-label="Sign out"
-              className="flex items-center justify-center w-7 h-7 rounded-lg text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
+              className="flex items-center justify-center w-7 h-7 rounded-lg text-zinc-500 hover:text-zinc-100 hover:bg-white/10 transition-colors"
             >
               <LogOut className="h-3.5 w-3.5" />
             </button>
@@ -133,14 +133,14 @@ function NavLink({
     <Link
       href={href}
       className={[
-        'group relative flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm transition-colors',
+        'group relative flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm transition-all duration-150',
         active
-          ? 'bg-zinc-900 text-zinc-50'
-          : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60',
+          ? 'bg-white/[0.07] text-zinc-50 border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+          : 'text-zinc-400 border border-transparent hover:text-zinc-100 hover:bg-white/[0.04]',
       ].join(' ')}
     >
       {active && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-full bg-indigo-500" />
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-full bg-gradient-to-b from-indigo-400 to-violet-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
       )}
       <Icon
         className={[
