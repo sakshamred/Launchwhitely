@@ -1115,7 +1115,7 @@ dependencies = [
  "constant_time_eq",
  "futures",
  "hex",
- "launchwhitely-core",
+ "launchwhitely-core 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.8.6",
  "reqwest",
  "serde",
@@ -1139,6 +1139,24 @@ version = "0.1.0"
 dependencies = [
  "hex",
  "rand 0.8.6",
+ "regex",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+ "time",
+ "twox-hash",
+ "ulid",
+]
+
+[[package]]
+name = "launchwhitely-core"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9aaad862835a2e33c80db47c550ca86399351f1caede0817873ba019e8eb845"
+dependencies = [
+ "hex",
  "regex",
  "semver",
  "serde",

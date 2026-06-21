@@ -36,3 +36,4 @@ regex = "1"
 semver = "1"
 constant_time_eq = "0.3"
 twox-hash = "1"
+launchwhitely-core = { version = "0.1.0" }
