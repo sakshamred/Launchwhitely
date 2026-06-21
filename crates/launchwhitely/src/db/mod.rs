@@ -24,7 +24,7 @@ pub async fn connect(db_url: &str) -> Result<Pool> {
 /// Embedded migration SQL — run in order on startup.
 const MIGRATIONS: &[(&str, &str)] = &[(
     "0001_initial",
-    include_str!("../../../../migrations/0001_initial.sql"),
+    include_str!("../../migrations/0001_initial.sql"),
 )];
 
 /// Split a SQL script into individual statements, ignoring `;` inside
