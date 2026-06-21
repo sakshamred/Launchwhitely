@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE flags SET description = ?, updated_at = ? WHERE key = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "95d2e4a0fe7ec210a402253c0909e13d865b3f70ace4bd99494b997d233a0d9b"
+}

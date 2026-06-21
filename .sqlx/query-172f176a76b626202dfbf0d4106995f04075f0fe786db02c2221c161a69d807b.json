@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT flag_key, env_key, enabled, targets, rules, fallthrough, off_variation, salt, updated_at FROM flag_configs WHERE flag_key = ? AND env_key = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "flag_key",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "env_key",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "enabled",
+        "ordinal": 2,
+        "type_info": "Int64"
+      },
+      {
+        "name": "targets",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "rules",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "fallthrough",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "off_variation",
+        "ordinal": 6,
+        "type_info": "Int64"
+      },
+      {
+        "name": "salt",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 8,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "172f176a76b626202dfbf0d4106995f04075f0fe786db02c2221c161a69d807b"
+}

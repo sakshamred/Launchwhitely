@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE segments SET included = ?, updated_at = ? WHERE key = ? AND env_key = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "f2d922f2fa7df03310c920a19ee6215a464bc7b1512ae955694fe5865ebe4650"
+}

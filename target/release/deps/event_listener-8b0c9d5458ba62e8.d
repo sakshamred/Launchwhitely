@@ -1,0 +1,7 @@
+/Users/p/Documents/Meth_v1/launchwhitely/target/release/deps/event_listener-8b0c9d5458ba62e8.d: /Users/p/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/event-listener-2.5.3/src/lib.rs
+
+/Users/p/Documents/Meth_v1/launchwhitely/target/release/deps/libevent_listener-8b0c9d5458ba62e8.rlib: /Users/p/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/event-listener-2.5.3/src/lib.rs
+
+/Users/p/Documents/Meth_v1/launchwhitely/target/release/deps/libevent_listener-8b0c9d5458ba62e8.rmeta: /Users/p/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/event-listener-2.5.3/src/lib.rs
+
+/Users/p/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/event-listener-2.5.3/src/lib.rs:

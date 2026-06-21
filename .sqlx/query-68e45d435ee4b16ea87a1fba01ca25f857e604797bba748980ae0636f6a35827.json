@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO segments (key, env_key, name, included, excluded, clauses) VALUES (?, ?, ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "68e45d435ee4b16ea87a1fba01ca25f857e604797bba748980ae0636f6a35827"
+}

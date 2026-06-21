@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO flag_configs (flag_key, env_key, enabled, targets, rules, fallthrough, off_variation, salt, updated_at)\n           VALUES (?, ?, 0, '{}', '[]', '0', 0, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "28d91513c90f5751ec1729970219802ee888ee9d5af6b7eb346f30a16cfcc9bf"
+}

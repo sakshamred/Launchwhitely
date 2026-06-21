@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE flag_configs SET enabled = ?, updated_at = ? WHERE flag_key = ? AND env_key = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "9e470db89e41c8259ffdb6be445aca9432ac9ee14173ce5a13f54c07a99bfd8e"
+}

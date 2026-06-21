@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO flags (key, kind, variations, description) VALUES (?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "b0ce8406cdc0b58a99aa2ed9b4e9a2543aef661f6da0c2f46c51a4429051fd2c"
+}

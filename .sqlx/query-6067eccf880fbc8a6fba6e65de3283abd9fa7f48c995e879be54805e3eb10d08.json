@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE flags SET variations = ?, updated_at = ? WHERE key = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "6067eccf880fbc8a6fba6e65de3283abd9fa7f48c995e879be54805e3eb10d08"
+}

@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT key, env_key, name, included, excluded, clauses, created_at, updated_at FROM segments WHERE env_key = ? ORDER BY key",
+  "describe": {
+    "columns": [
+      {
+        "name": "key",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "env_key",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "name",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "included",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "excluded",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "clauses",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 7,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e705bdc8f606bdda6081419439781c34b1a0971745323503654a563307879d12"
+}

@@ -1,0 +1,30 @@
+{
+  "name": "launchwhitly",
+  "version": "0.1.0",
+  "description": "Own your feature flags — a self-hostable LaunchDarkly alternative",
+  "keywords": ["feature-flags", "feature-toggles", "self-hosted", "sse", "launchdarkly-alternative"],
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sakshamred/Meth-v12"
+  },
+  "homepage": "https://meth-website.vercel.app/",
+  "bugs": {
+    "url": "https://github.com/your-org/launchwhitely/issues"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "bin": {
+    "launchwhitely": "./bin/runner.js"
+  },
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "files": [
+    "bin/runner.js",
+    "install.js",
+    "package.json",
+    "README.md"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM segments WHERE key = ? AND env_key = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "c8438988551ec452e7158995dd07c45eb206c8ee972654c60d436460c63bf4ce"
+}

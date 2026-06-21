@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT flag_key FROM flag_configs WHERE flag_key = ? AND env_key = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "flag_key",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "58c8befcb9c6d2f04c6301b1bd7662daa62fc5b9ae6cf972e176d17bcb0458d0"
+}

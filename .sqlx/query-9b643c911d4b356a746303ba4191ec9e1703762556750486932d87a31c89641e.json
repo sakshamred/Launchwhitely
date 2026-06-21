@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO flag_configs (flag_key, env_key, enabled, targets, rules, fallthrough, off_variation, salt, updated_at)\n           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n           ON CONFLICT(flag_key, env_key) DO UPDATE SET\n             enabled = excluded.enabled,\n             targets = excluded.targets,\n             rules = excluded.rules,\n             fallthrough = excluded.fallthrough,\n             off_variation = excluded.off_variation,\n             salt = excluded.salt,\n             updated_at = excluded.updated_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 9
+    },
+    "nullable": []
+  },
+  "hash": "9b643c911d4b356a746303ba4191ec9e1703762556750486932d87a31c89641e"
+}
